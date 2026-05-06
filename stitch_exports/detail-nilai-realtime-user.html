@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#40493d",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#cbffc2",
+                    "on-primary-fixed-variant": "#005312",
+                    "tertiary": "#1f6223",
+                    "surface-container-high": "#e6e9e7",
+                    "secondary-fixed-dim": "#a2d3a4",
+                    "on-secondary-container": "#426e47",
+                    "tertiary-fixed": "#acf4a4",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#91d78a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-variant": "#e1e3e1",
+                    "primary": "#0d631b",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#88d982",
+                    "on-secondary-fixed-variant": "#24502c",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#d8dad9",
+                    "primary-container": "#2e7d32",
+                    "primary-fixed-dim": "#88d982",
+                    "surface-tint": "#1b6d24",
+                    "inverse-surface": "#2e3130",
+                    "secondary-container": "#bdefbe",
+                    "error": "#ba1a1a",
+                    "background": "#f8faf8",
+                    "on-tertiary-fixed-variant": "#0c5216",
+                    "surface-container-highest": "#e1e3e1",
+                    "surface-bright": "#f8faf8",
+                    "surface-container-low": "#f2f4f2",
+                    "on-surface": "#191c1b",
+                    "secondary": "#3c6842",
+                    "on-tertiary-container": "#c8ffbf",
+                    "on-background": "#191c1b",
+                    "surface-container": "#eceeec",
+                    "surface": "#f8faf8",
+                    "tertiary-container": "#3a7b39",
+                    "on-secondary-fixed": "#002109",
+                    "outline": "#707a6c",
+                    "on-tertiary-fixed": "#002203",
+                    "inverse-on-surface": "#eff1ef",
+                    "on-primary-fixed": "#002204",
+                    "outline-variant": "#bfcaba",
+                    "secondary-fixed": "#bdefbe",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "sm": "12px",
+                    "base": "8px",
+                    "xs": "4px",
+                    "xl": "64px",
+                    "margin": "24px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h3": ["Inter"],
+                    "h2": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.06em", "fontWeight": "700"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "h3": ["20px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "600"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.01em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm dark:shadow-none sticky top-0 z-50">
+<div class="flex justify-between items-center w-full h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional studio portrait of a young student wearing a clean academic uniform. The lighting is soft and bright, emphasizing a positive and studious atmosphere. The background is a minimalist, light-mode architectural space with subtle green accents that match the school's primary color palette. The image is crisp, modern, and high-quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1-mx6yTrunR3UF-te8FmwpmhT4LMHlEX7T0_dKrPDPBZm5x6dC7PtcFjUN9h5y4cHqH46rjh43glPJiZ0z5r0PxQ6e2fYGqLy2MNgxnYZuvRPPQDT0ppuFBhd5GpwhPJ7jPxYRa2V7upBvEz9PmUmnnigDeoCvPhudzkbh-QK5cKPjemTdhHWCM_zX_7JyYAj3MIMYRskRnbEIFckIBJg8AqOrhMrpB-hA1SPQgIWFQTrgCR55Qvwz21TuQS49PbNCXUlCKsLsUA"/>
+</div>
+<div class="flex flex-col">
+<span class="text-xl font-black text-green-800 dark:text-green-400 font-h2">REKAPAF</span>
+<span class="text-xs text-on-surface-variant font-medium">Budi Santoso</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-green-700 dark:text-green-500">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 md:px-8 py-6">
+<!-- Hero Section: Student Overview -->
+<section class="mb-8">
+<div class="bg-primary-container rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center text-white relative overflow-hidden shadow-xl">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="relative z-10 space-y-2 text-center md:text-left">
+<p class="font-label-caps text-on-primary-container opacity-80">RATA-RATA SEMESTER</p>
+<h1 class="font-h1 text-5xl md:text-6xl text-on-primary-container">88.5</h1>
+<div class="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<span class="text-sm font-medium">+2.4 Poin dari bulan lalu</span>
+</div>
+</div>
+<div class="mt-6 md:mt-0 relative z-10 flex flex-col items-center md:items-end gap-1">
+<p class="text-on-primary-container font-h3">Budi Santoso</p>
+<p class="text-on-primary-container/70 text-sm">Kelas 10-A (Unggulan)</p>
+<p class="text-on-primary-container/70 text-sm">NISN: 0098273615</p>
+</div>
+</div>
+</section>
+<!-- Tabbed Navigation -->
+<nav class="flex gap-2 mb-6 p-1 bg-surface-container rounded-2xl w-fit">
+<button class="bg-white text-green-700 font-bold px-6 py-2.5 rounded-xl shadow-sm transition-all duration-150 active:scale-95">Semester Ini</button>
+<button class="text-slate-500 hover:bg-white/50 px-6 py-2.5 rounded-xl transition-all duration-150 active:scale-95">Riwayat</button>
+</nav>
+<!-- Bento Grid Layout for Grade Details -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Trend Chart & Stats -->
+<div class="lg:col-span-8 space-y-6">
+<!-- Trend Chart Container -->
+<div class="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="font-h2 text-on-surface">Tren Perkembangan</h2>
+<p class="text-sm text-on-surface-variant">Data progres akademik 6 bulan terakhir</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</div>
+<!-- Simplified Visual Chart Area -->
+<div class="h-64 w-full relative flex items-end justify-between gap-2 px-2">
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="border-t border-slate-100 w-full h-0"></div>
+<div class="border-t border-slate-100 w-full h-0"></div>
+<div class="border-t border-slate-100 w-full h-0"></div>
+<div class="border-t border-slate-100 w-full h-0"></div>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container h-32 rounded-t-lg group-hover:bg-primary transition-colors"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">JUL</span>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container h-40 rounded-t-lg group-hover:bg-primary transition-colors"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">AGU</span>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container h-36 rounded-t-lg group-hover:bg-primary transition-colors"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">SEP</span>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container h-48 rounded-t-lg group-hover:bg-primary transition-colors"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">OKT</span>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-primary h-52 rounded-t-lg"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">NOV</span>
+</div>
+<div class="relative group flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container h-44 rounded-t-lg group-hover:bg-primary transition-colors"></div>
+<span class="text-[10px] mt-2 font-label-caps text-slate-400">DES</span>
+</div>
+</div>
+</div>
+<!-- Subjects List -->
+<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100">
+<div class="p-6 border-b border-slate-50 flex justify-between items-center">
+<h2 class="font-h2 text-on-surface">Detail Mata Pelajaran</h2>
+<button class="text-primary font-bold text-sm hover:underline">Unduh PDF</button>
+</div>
+<div class="divide-y divide-slate-50">
+<!-- Subject Row -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calculate</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">Matematika</h3>
+<p class="text-body-sm text-on-surface-variant">Pengajar: Bpk. Heru</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<div class="text-2xl font-bold text-primary">92</div>
+<span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold">LULUS</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Subject Row -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">language</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">B. Indonesia</h3>
+<p class="text-body-sm text-on-surface-variant">Pengajar: Ibu Sari</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<div class="text-2xl font-bold text-primary">85</div>
+<span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold">LULUS</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Subject Row -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">science</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">IPA (Fisika)</h3>
+<p class="text-body-sm text-on-surface-variant">Pengajar: Bpk. Ahmad</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<div class="text-2xl font-bold text-primary">78</div>
+<span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold">LULUS</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Subject Row -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">Bahasa Inggris</h3>
+<p class="text-body-sm text-on-surface-variant">Pengajar: Ibu Diana</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<div class="text-2xl font-bold text-secondary">68</div>
+<span class="text-[10px] px-2 py-0.5 bg-secondary-container text-secondary rounded-full font-bold">PERBAIKAN</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Quick Insights -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Attendance Card -->
+<div class="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100">
+<h3 class="font-h3 text-on-surface mb-4">Presensi</h3>
+<div class="flex items-center gap-4 mb-4">
+<div class="relative w-20 h-20">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-slate-100 fill-none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-width="4"></path>
+<path class="stroke-primary fill-none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="98, 100" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-sm font-bold text-on-surface">98%</span>
+</div>
+</div>
+<div>
+<p class="text-2xl font-bold text-on-surface">Sangat Baik</p>
+<p class="text-xs text-on-surface-variant">Hanya 1 kali absen semester ini</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-surface-container rounded-lg p-2 text-center">
+<p class="text-[10px] font-label-caps text-on-surface-variant">IZIN</p>
+<p class="font-bold text-primary">1</p>
+</div>
+<div class="bg-surface-container rounded-lg p-2 text-center">
+<p class="text-[10px] font-label-caps text-on-surface-variant">SAKIT</p>
+<p class="font-bold text-primary">0</p>
+</div>
+<div class="bg-surface-container rounded-lg p-2 text-center">
+<p class="text-[10px] font-label-caps text-on-surface-variant">ALFA</p>
+<p class="font-bold text-primary">0</p>
+</div>
+</div>
+</div>
+<!-- Learning Material Prompt Card -->
+<div class="bg-green-50 rounded-2xl p-6 border border-green-100">
+<div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center mb-4">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<h3 class="font-h3 text-green-900 mb-2">Rekomendasi Belajar</h3>
+<p class="text-sm text-green-800 mb-4 leading-relaxed">Berdasarkan nilai <b>Bahasa Inggris</b> yang menurun, kami menyarankan Budi untuk mengikuti sesi pengayaan besok siang.</p>
+<button class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-colors">Daftar Pengayaan</button>
+</div>
+<!-- Discipline Note -->
+<div class="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-green-700" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h3 class="font-h3 text-on-surface">Catatan Disiplin</h3>
+</div>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="w-1 bg-green-500 rounded-full"></div>
+<div>
+<p class="text-xs text-on-surface-variant">20 Nov 2023</p>
+<p class="text-sm font-medium text-on-surface">Membantu Guru di Perpustakaan</p>
+<p class="text-[10px] font-bold text-green-700 mt-1">+5 POIN KREATIVITAS</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20 pb-safe px-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Inter'] text-[11px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl px-3 py-1 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assessment" style="font-variation-settings: 'FILL' 1;">assessment</span>
+<span class="font-['Inter'] text-[11px] font-medium">Grades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-['Inter'] text-[11px] font-medium">Discipline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[11px] font-medium">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#40493d",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#cbffc2",
+                    "on-primary-fixed-variant": "#005312",
+                    "tertiary": "#1f6223",
+                    "surface-container-high": "#e6e9e7",
+                    "secondary-fixed-dim": "#a2d3a4",
+                    "on-secondary-container": "#426e47",
+                    "tertiary-fixed": "#acf4a4",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#91d78a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-variant": "#e1e3e1",
+                    "primary": "#0d631b",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#88d982",
+                    "on-secondary-fixed-variant": "#24502c",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#d8dad9",
+                    "primary-container": "#2e7d32",
+                    "primary-fixed-dim": "#88d982",
+                    "surface-tint": "#1b6d24",
+                    "inverse-surface": "#2e3130",
+                    "secondary-container": "#bdefbe",
+                    "error": "#ba1a1a",
+                    "background": "#f8faf8",
+                    "on-tertiary-fixed-variant": "#0c5216",
+                    "surface-container-highest": "#e1e3e1",
+                    "surface-bright": "#f8faf8",
+                    "surface-container-low": "#f2f4f2",
+                    "on-surface": "#191c1b",
+                    "secondary": "#3c6842",
+                    "on-tertiary-container": "#c8ffbf",
+                    "on-background": "#191c1b",
+                    "surface-container": "#eceeec",
+                    "surface": "#f8faf8",
+                    "tertiary-container": "#3a7b39",
+                    "on-secondary-fixed": "#002109",
+                    "outline": "#707a6c",
+                    "on-tertiary-fixed": "#002203",
+                    "inverse-on-surface": "#eff1ef",
+                    "on-primary-fixed": "#002204",
+                    "outline-variant": "#bfcaba",
+                    "secondary-fixed": "#bdefbe",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "sm": "12px",
+                    "base": "8px",
+                    "xs": "4px",
+                    "xl": "64px",
+                    "margin": "24px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h3": ["Inter"],
+                    "h2": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.06em", "fontWeight": "700"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "h3": ["20px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "600"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.01em", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm dark:shadow-none sticky top-0 z-40">
+<div class="flex justify-between items-center w-full h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-secondary-container flex items-center justify-center">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional portrait of a school administrator in a bright, modern office setting. The individual is wearing professional attire, exuding authority and friendliness. The background is softly blurred, showing books and academic rewards, keeping the focus on the sharp, high-key lighting of the subject. The overall aesthetic is clean, academic, and modern corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPxgAlQiNmJDz8_v1LnDw2WUC-v4w0-badcm0wL9sNNxWiEJju-jVrZp1aLwsL74UNF-FAJ9egaLeSuuZBrjgXXSlTTAdeEzjWuN3Se-Gvs5nFhiBvzzy-vfFkRvd9xwdodjk_TYLUmhncjB1Jtzhkkixi-6ue9zsuIZq8kYxL21rXdtEC7z4U-jD39cbekfOghMkS29Fz27jueUNhL9cLid9ns54w3w8ft0H6Xp6wnVWd4hn4xEha1NgxIjUCgJNRhzqaqRDks1Y"/>
+</div>
+<h1 class="text-xl font-black text-green-800 dark:text-green-400 font-['Inter'] tracking-tight">REKAPAF</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-150 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-8">
+<!-- Welcome Section -->
+<section class="space-y-1">
+<h2 class="font-h2 text-h2 text-on-surface">Selamat Pagi, Wali Kelas</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Academic Year 2023/2024 • Semester Ganjil</p>
+</section>
+<!-- Summary Cards (Bento Style) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Total Siswa -->
+<div class="bg-white rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between border border-transparent hover:border-primary-fixed-dim transition-all group">
+<div class="flex justify-between items-start">
+<span class="p-2 bg-primary-container/10 text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</span>
+<span class="text-xs font-label-caps text-primary bg-primary-fixed px-2 py-1 rounded-full">+2 New</span>
+</div>
+<div class="mt-4">
+<p class="font-label-caps text-on-surface-variant uppercase">Total Siswa</p>
+<h3 class="text-3xl font-black text-on-surface">32</h3>
+</div>
+</div>
+<!-- Rata-rata Nilai -->
+<div class="bg-white rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between border border-transparent hover:border-primary-fixed-dim transition-all group">
+<div class="flex justify-between items-start">
+<span class="p-2 bg-tertiary-container/10 text-tertiary rounded-lg">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+</span>
+<span class="text-xs font-label-caps text-tertiary bg-tertiary-fixed px-2 py-1 rounded-full">Top 5%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-caps text-on-surface-variant uppercase">Rata-rata Nilai Kelas</p>
+<h3 class="text-3xl font-black text-on-surface">88.4</h3>
+</div>
+</div>
+<!-- Pelanggaran -->
+<div class="bg-white rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between border border-transparent hover:border-primary-fixed-dim transition-all group">
+<div class="flex justify-between items-start">
+<span class="p-2 bg-error-container/20 text-error rounded-lg">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+</span>
+<span class="text-xs font-label-caps text-error bg-error-container px-2 py-1 rounded-full">Urgent</span>
+</div>
+<div class="mt-4">
+<p class="font-label-caps text-on-surface-variant uppercase">Pelanggaran Hari Ini</p>
+<h3 class="text-3xl font-black text-on-surface">0</h3>
+</div>
+</div>
+</section>
+<!-- Quick Access Grid -->
+<section class="space-y-4">
+<h3 class="font-h3 text-h3 text-on-surface">Quick Access</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+<button class="bg-primary-container text-white p-6 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform shadow-md">
+<span class="material-symbols-outlined text-3xl" data-icon="person_search">person_search</span>
+<span class="font-label-caps text-xs">Student List</span>
+</button>
+<button class="bg-white border border-outline-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="edit_note">edit_note</span>
+<span class="font-label-caps text-xs text-on-surface">Input Grades</span>
+</button>
+<button class="bg-white border border-outline-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-caps text-xs text-on-surface">Attendance</span>
+</button>
+<button class="bg-white border border-outline-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="description">description</span>
+<span class="font-label-caps text-xs text-on-surface">Reports</span>
+</button>
+</div>
+</section>
+<!-- Pengumuman Sekolah (Horizontal Scroll) -->
+<section class="space-y-4">
+<div class="flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-surface">Pengumuman Sekolah</h3>
+<button class="text-primary font-label-caps text-xs hover:underline">View All</button>
+</div>
+<div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+<!-- News Card 1 -->
+<div class="min-w-[280px] md:min-w-[320px] bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 flex-shrink-0">
+<div class="h-32 bg-slate-200">
+<img alt="Exam Announcement" class="w-full h-full object-cover" data-alt="A clean, minimalist graphic showing a calendar with a green highlight on specific dates, representing an exam schedule. The image uses a soft green and white palette, with professional typography indicating 'Final Exams'. The lighting is bright and even, reinforcing an organized and calm academic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAawSlpyzRrCP3pKLECjvDBgLku5WMH86vFP1JkKcu_nEAm3hat7mFdZGoPVY4wJmVoZ60wiDiqDFFauOZRjBgvaMv-eNKSTsJrhRJ7cKcfVeEtc53ahCP88oiRK6urwwtg5GFYt_jAXwqYTkKCLW1tKwXMDIyi5Pt2pe-cvVzEy9MBxtfB8aDk-yqI25lu3fiP_dUMOXWtTQCXx4pUaitctmpiktEtygeYFnA9wWjXL4fZ08tZ5cXUOgAiRx79XGEY2Pl5knWO4bs"/>
+</div>
+<div class="p-4 space-y-2">
+<span class="text-[10px] font-label-caps text-primary bg-primary-fixed px-2 py-0.5 rounded">ACADEMIC</span>
+<h4 class="font-h3 text-body-md font-bold leading-tight">Jadwal Ujian Akhir Semester Ganjil 2023</h4>
+<p class="text-xs text-on-surface-variant line-clamp-2">Diharapkan seluruh wali kelas untuk segera memverifikasi data nilai harian siswa sebelum...</p>
+</div>
+</div>
+<!-- News Card 2 -->
+<div class="min-w-[280px] md:min-w-[320px] bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 flex-shrink-0">
+<div class="h-32 bg-slate-200">
+<img alt="School Event" class="w-full h-full object-cover" data-alt="A vibrant digital illustration of a modern school campus during a festive event. Students are seen in professional school uniforms, engaging in collaborative activities. The scene is bathed in golden hour sunlight, creating a warm, inspiring atmosphere. The style is clean and corporate, utilizing a professional green and white color scheme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHNJCW0bOIWqfz22ojCgvefAASt452d-cVWLsuGHC8hHZIRp8A0uo6M2rWHbEB9DEqyr95zh9Bpzqp0a7IIvTvEmviif2iFfHI5M2Gaor_k1z00JVZfWQfbMHFjUc_VWARGmGO6Kqp32bidm4iOaoafIBiUgjuGIonZMJQ87orAbwCYs0isay6Z0dk1ZBJoQP1_UiaNuAFTYQUS3l3sMypLYX2lnONs7ZPi2L_IMxnL8biSmUsP9cLjjRPVhk6E-iFxTBxVgGcUTA"/>
+</div>
+<div class="p-4 space-y-2">
+<span class="text-[10px] font-label-caps text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded">EVENT</span>
+<h4 class="font-h3 text-body-md font-bold leading-tight">Peringatan Hari Guru Nasional ke-78</h4>
+<p class="text-xs text-on-surface-variant line-clamp-2">Segenap civitas akademika REKAPAF mengundang Bapak/Ibu Wali Kelas dalam acara syukuran...</p>
+</div>
+</div>
+<!-- News Card 3 -->
+<div class="min-w-[280px] md:min-w-[320px] bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 flex-shrink-0">
+<div class="h-32 bg-slate-200">
+<img alt="System Update" class="w-full h-full object-cover" data-alt="A high-tech digital interface mockup showing a progress bar and sleek green icons representing a system update. The background is a clean white with subtle grey grid lines, giving a sense of organized data management. The aesthetic is modern, professional, and focuses on technological efficiency within an educational context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtkCs0bZvW3AyM4dwHV9YWN_WB2VGHLFIi_yH1c4WFRradCjtlGO8jp8h_VEPSJ2DXitVzKgyqnB0ogTil9qCF2WFNMnjKgtWxNlMZASSlTLtRpW1X85eD4cloyJdyUwvNasv3vKIPR6jG2xWQcgcveufXEX8m8cXKcQsfSOf8PLxL1jRMHZPOAmbQpMMJw7i0DgOzfnJFGmPyAhk82N-pOQH8jqw7QOC_g_mzyjBMmNdS3cJs7vzeL4Uw1scjWLTYZx1d3vBrPLM"/>
+</div>
+<div class="p-4 space-y-2">
+<span class="text-[10px] font-label-caps text-on-secondary-container bg-secondary-fixed px-2 py-0.5 rounded">SYSTEM</span>
+<h4 class="font-h3 text-body-md font-bold leading-tight">Pembaruan Fitur Rekapitulasi Otomatis</h4>
+<p class="text-xs text-on-surface-variant line-clamp-2">Kini wali kelas dapat mengunduh rekap nilai per semester dalam format PDF hanya dengan satu klik...</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20 pb-safe px-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl px-3 py-1 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Inter'] text-[11px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-['Inter'] text-[11px] font-medium">Grades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-['Inter'] text-[11px] font-medium">Discipline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[11px] font-medium">Profile</span>
+</a>
+</nav>
+</body></html>

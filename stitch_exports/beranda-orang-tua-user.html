@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#40493d",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#cbffc2",
+                    "on-primary-fixed-variant": "#005312",
+                    "tertiary": "#1f6223",
+                    "surface-container-high": "#e6e9e7",
+                    "secondary-fixed-dim": "#a2d3a4",
+                    "on-secondary-container": "#426e47",
+                    "tertiary-fixed": "#acf4a4",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#91d78a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-variant": "#e1e3e1",
+                    "primary": "#0d631b",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#88d982",
+                    "on-secondary-fixed-variant": "#24502c",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#d8dad9",
+                    "primary-container": "#2e7d32",
+                    "primary-fixed-dim": "#88d982",
+                    "surface-tint": "#1b6d24",
+                    "inverse-surface": "#2e3130",
+                    "secondary-container": "#bdefbe",
+                    "error": "#ba1a1a",
+                    "background": "#f8faf8",
+                    "on-tertiary-fixed-variant": "#0c5216",
+                    "surface-container-highest": "#e1e3e1",
+                    "surface-bright": "#f8faf8",
+                    "surface-container-low": "#f2f4f2",
+                    "on-surface": "#191c1b",
+                    "secondary": "#3c6842",
+                    "on-tertiary-container": "#c8ffbf",
+                    "on-background": "#191c1b",
+                    "surface-container": "#eceeec",
+                    "surface": "#f8faf8",
+                    "tertiary-container": "#3a7b39",
+                    "on-secondary-fixed": "#002109",
+                    "outline": "#707a6c",
+                    "on-tertiary-fixed": "#002203",
+                    "inverse-on-surface": "#eff1ef",
+                    "on-primary-fixed": "#002204",
+                    "outline-variant": "#bfcaba",
+                    "secondary-fixed": "#bdefbe",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "sm": "12px",
+                    "base": "8px",
+                    "xs": "4px",
+                    "xl": "64px",
+                    "margin": "24px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h3": ["Inter"],
+                    "h2": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.06em", "fontWeight": "700"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "h3": ["20px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "600"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.01em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f8faf8;
+            font-family: 'Inter', sans-serif;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 768px) {
+            .bento-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm dark:shadow-none fixed top-0 left-0 right-0 z-50">
+<div class="flex justify-between items-center w-full h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged Indonesian father with a warm, friendly smile, wearing a clean white shirt. The background is a soft-focus office environment with natural light and hints of indoor plants. The lighting is high-key and flattering, emphasizing a modern corporate and trustworthy aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUnJxpVKpzmwdZKO668z716tOjuxH86zyEubYnJ9R-jltw3p6HNhMYmUkpVQdkXLtGJMghr5efGKQCJHj9WlXulZMZv4VTuKReNDYecdI85EmvqnHCc7j21K3oHKQ5Bnmx_KbVBlbRLasBIIKBjf5RIZw1RcJGh6FOc0wobpn1JgsQJ1zvuL2Dj48t7CvsHfMieGgjdgh30VCaMNIZTUagn-jZgrzsKj-S089jbTX8TbSlI-y7gT4bp_r_rO7Zr0ZKCezImMjeT3w"/>
+</div>
+<span class="text-xl font-black text-green-800 dark:text-green-400 font-['Inter'] tracking-tight">REKAPAF</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-green-700 dark:text-green-500" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
+<!-- Welcome Message -->
+<section class="mb-8">
+<h1 class="font-h1 text-h1 text-on-surface mb-1">Halo, Ibu/Bapak Budi</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Pantau perkembangan akademik Ananda hari ini.</p>
+</section>
+<!-- Profil Anak Card -->
+<section class="mb-10">
+<div class="bg-white rounded-2xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-surface-container">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-xl bg-primary-fixed flex items-center justify-center overflow-hidden">
+<img alt="Anak Profile" class="w-full h-full object-cover" data-alt="A bright and optimistic portrait of a young Indonesian student in a neat school uniform, smiling cheerfully. The setting is a well-lit classroom with modern educational posters in the background. The visual style is clean, sharp, and professional, using a soft color palette to evoke a sense of academic focus and institutional stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Z-aARI6jTO72HxDsvEq46_9G-aoIQ0UJqk-ACFMYz4LY4in20NqGJHEcOUmXKCaKfGOTjhqc-CNb6QmJLdJu8CqcBQN-RRmTIa1uENvFF8nD3I2zEAqG9M7SV_PVM3eur0wDmNh5OXVdUMaUbMYW2jp44Todf5OZpZ0mp4ntAjdww9S6jHvS52XIjccmA0u609njTtnVgWpogLAvvOnnNiZzZFTSvyJWNlSCyKYStX5vpXedWzVxzDb0bOT1N4gt-xnSQW7ZqG0"/>
+</div>
+<div>
+<h2 class="font-h2 text-h2 text-on-surface">Arya Wiguna</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Kelas 11-A IPA • NISN: 00928374</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="assessment">assessment</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Rata-rata Nilai</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-h2 text-h2 text-primary">88.5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/100</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="verified_user">verified_user</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Poin Kedisiplinan</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-h2 text-h2 text-primary">100</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Poin</span>
+</div>
+</div>
+</div>
+<div class="mt-6">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-body-sm font-semibold">Progres Kehadiran</span>
+<span class="font-body-sm text-body-sm text-primary font-bold">96%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[96%] rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Kabar Harian Sekolah -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-h3 text-h3 text-on-surface">Kabar Harian Sekolah</h3>
+<button class="text-primary font-semibold text-sm">Lihat Semua</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Activity Card 1 -->
+<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-surface-container group">
+<div class="relative h-48 overflow-hidden">
+<img alt="School News" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A group of students enthusiastically participating in a science laboratory experiment, wearing white lab coats and safety goggles. The background shows a modern, well-equipped laboratory with microscopes and glassware. The lighting is bright and crisp, highlighting the clean, green-tinted institutional environment with professional clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbYzaNFVRuMuX0vLcsQc-X0ISUM6UJxm9q91s17W_Xc8iQByMubt1DWnUgTtWU2qiYvky2v-8lWcQJi8zdcB7711YBp1ZEb8hsxeYN2FFNI1od09_N1is0-neOvymm9WVD1zZljEOzbA3hDsSEnIMPSyZF8d53Uces3cTiL7ZTYQzbDjV59yc2vQ_g1mNIDsXf5R3odeCJ02GcVtdQ7a7vFTlLruexR_PSBe1SbLjnBloPbuXQIoIIlGa_xT45j2MUKKWcLjXgpcM"/>
+<div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Akademik
+                        </div>
+</div>
+<div class="p-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">12 Oktober 2023</span>
+<h4 class="font-h3 text-h3 mt-1 mb-2 group-hover:text-primary transition-colors">Eksplorasi Sains di Laboratorium Terpadu</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Siswa kelas 11 IPA hari ini melakukan praktek pengamatan mikroorganisme dengan mikroskop terbaru.</p>
+</div>
+</div>
+<!-- Activity Card 2 -->
+<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-surface-container group">
+<div class="relative h-48 overflow-hidden">
+<img alt="School News" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A lush, green school library with tall bookshelves and comfortable seating areas where students are quietly reading and studying. Soft morning sunlight streams through large windows, creating a peaceful and focused atmosphere. The aesthetic is modern and organizational, emphasizing a stable and growth-oriented educational setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASyoUOtFFFRMyh0U7RDEKLSh3l1meoHS22TSvTSGCDIDZmjy2Ag87f-90NSfXF77dWO1Qh2eFZzheF1N_FFXs5DZgzzYf5RqKn0U2bdGJflYNpkYW_IYIkUeOW5FI0ERGVFdBkgxj0aOoVoKmXd67Y7mZOKAFWImWuxx-p4zFym33R4bPiePVh6c8mmfwxFevH-FWRbj-OSv92aFLLEF6dXtPxHo0VAq17fgCcklLbWTDMna93qg9_4ycbB1BZnR4I5XvSg5puyKE"/>
+<div class="absolute top-4 left-4 bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Pengumuman
+                        </div>
+</div>
+<div class="p-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">11 Oktober 2023</span>
+<h4 class="font-h3 text-h3 mt-1 mb-2 group-hover:text-primary transition-colors">Penambahan Koleksi Buku Perpustakaan Digital</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Kini orang tua dapat mengakses katalog buku terbaru melalui aplikasi REKAPAF untuk memantau bacaan anak.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20 pb-safe px-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl px-3 py-1 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Inter'] text-[11px] font-medium mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-['Inter'] text-[11px] font-medium mt-1">Grades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-['Inter'] text-[11px] font-medium mt-1">Discipline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-green-600 dark:hover:text-green-300 tap-highlight-transparent active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[11px] font-medium mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
