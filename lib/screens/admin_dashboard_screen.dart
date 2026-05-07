@@ -528,11 +528,12 @@ class _NewsCardSmall extends StatelessWidget {
               ),
               child: Image.network(
                 news.fullImageUrl,
-                height: 80,
+                height: 140,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                alignment: Alignment(news.focalX, news.focalY),
                 errorBuilder: (ctx, err, stack) => Container(
-                  height: 80,
+                  height: 140,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: RekapTheme.surfaceContainerLow,
@@ -552,7 +553,7 @@ class _NewsCardSmall extends StatelessWidget {
             )
           else
             Container(
-              height: 80,
+              height: 140,
               decoration: BoxDecoration(
                 color: RekapTheme.surfaceContainerLow,
                 borderRadius: const BorderRadius.vertical(
@@ -567,57 +568,63 @@ class _NewsCardSmall extends StatelessWidget {
                 ),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _categoryColor(),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    news.category.label.toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                      color: _categoryTextColor(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _categoryColor(),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      news.category.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: _categoryTextColor(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  news.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: RekapTheme.onSurface,
-                    height: 1.3,
+                  const SizedBox(height: 6),
+                  Text(
+                    news.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: RekapTheme.onSurface,
+                      height: 1.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  news.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 11,
-                    color: RekapTheme.onSurfaceVariant,
-                    height: 1.4,
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: Text(
+                      news.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        color: RekapTheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

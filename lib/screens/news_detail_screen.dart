@@ -44,8 +44,7 @@ class NewsDetailScreen extends StatelessWidget {
               Image.network(
                 imageUrl,
                 width: double.infinity,
-                height: 250,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (ctx, err, stack) => Container(
                   height: 200,
                   color: RekapTheme.surfaceContainerLow,

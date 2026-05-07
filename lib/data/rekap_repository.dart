@@ -174,6 +174,8 @@ class RekapRepository {
     required String category,
     required String date,
     File? imageFile,
+    double focalX = 0.0,
+    double focalY = 0.0,
   }) async {
     await ApiService.postMultipart(
       '/news',
@@ -182,6 +184,8 @@ class RekapRepository {
         'description': description,
         'category': category,
         'news_date': date,
+        'focal_x': focalX.toString(),
+        'focal_y': focalY.toString(),
       },
       imageFile,
       'image',
@@ -196,6 +200,8 @@ class RekapRepository {
     required String category,
     required String date,
     File? imageFile,
+    double focalX = 0.0,
+    double focalY = 0.0,
   }) async {
     // Note: Laravel PUT requests with multipart/form-data can be tricky.
     // Usually, we send POST and include _method=PUT in fields.
@@ -207,6 +213,8 @@ class RekapRepository {
         'description': description,
         'category': category,
         'news_date': date,
+        'focal_x': focalX.toString(),
+        'focal_y': focalY.toString(),
       },
       imageFile,
       'image',
@@ -362,6 +370,8 @@ class RekapRepository {
       date: DateTime.tryParse(json['news_date'] ?? '') ?? DateTime.now(),
       category: category,
       imageUrl: json['image_url'],
+      focalX: (json['focal_x'] as num?)?.toDouble() ?? 0.0,
+      focalY: (json['focal_y'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

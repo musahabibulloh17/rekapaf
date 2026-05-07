@@ -9,6 +9,8 @@ class SchoolNews {
     required this.date,
     required this.category,
     required this.imageUrl,
+    this.focalX = 0.0,
+    this.focalY = 0.0,
   });
 
   final int id;
@@ -17,6 +19,8 @@ class SchoolNews {
   final DateTime date;
   final NewsCategory category;
   final String? imageUrl;
+  final double focalX;
+  final double focalY;
 
   String get fullImageUrl {
     if (imageUrl == null || imageUrl!.isEmpty) return '';

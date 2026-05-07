@@ -447,6 +447,7 @@ class _NewsCard extends StatelessWidget {
                     height: 140,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    alignment: Alignment(news.focalX, news.focalY),
                     errorBuilder: (ctx, err, stack) => Container(
                       height: 140,
                       width: double.infinity,
@@ -498,6 +499,8 @@ class _NewsCard extends StatelessWidget {
                   ),
                   child: Text(
                     news.category.label.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 10,
