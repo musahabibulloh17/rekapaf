@@ -28,14 +28,19 @@ class ParentHomeScreen extends StatelessWidget {
             children: [
               Icon(Icons.person_search, size: 64, color: RekapTheme.outline),
               const SizedBox(height: 16),
-              const Text('Belum ada data siswa', style: TextStyle(fontFamily: 'Inter', fontSize: 16)),
+              const Text(
+                'Belum ada data siswa',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 16),
+              ),
               const SizedBox(height: 12),
               if (onRefresh != null)
                 FilledButton.icon(
                   onPressed: onRefresh,
                   icon: const Icon(Icons.refresh),
                   label: const Text('Muat Ulang'),
-                  style: FilledButton.styleFrom(backgroundColor: RekapTheme.primary),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: RekapTheme.primary,
+                  ),
                 ),
             ],
           ),
@@ -100,7 +105,8 @@ class ParentHomeScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => const AnnouncementsScreen(isAdmin: false),
+                          builder: (_) =>
+                              const AnnouncementsScreen(isAdmin: false),
                         ),
                       );
                     },
@@ -133,7 +139,8 @@ class ParentHomeScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => NewsDetailScreen(news: news[index]),
+                                builder: (_) =>
+                                    NewsDetailScreen(news: news[index]),
                               ),
                             );
                           },
@@ -227,10 +234,7 @@ class _ChildProfileCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right,
-                color: RekapTheme.primary,
-              ),
+              const Icon(Icons.chevron_right, color: RekapTheme.primary),
             ],
           ),
           const SizedBox(height: 20),
@@ -250,9 +254,8 @@ class _ChildProfileCard extends StatelessWidget {
               Expanded(
                 child: _StatBox(
                   icon: Icons.verified_user,
-                  label: 'POIN KEDISIPLINAN',
-                  value:
-                      student.disciplinePoints.totalPoints.toString(),
+                  label: 'POIN TATIB',
+                  value: student.disciplinePoints.totalPoints.toString(),
                   suffix: 'Poin',
                 ),
               ),
@@ -513,40 +516,40 @@ class _NewsCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Text(
-                  _formatDate(news.date),
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    color: RekapTheme.onSurfaceVariant,
+                  Text(
+                    _formatDate(news.date),
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      color: RekapTheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  news.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: RekapTheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: Text(
-                    news.description,
+                  const SizedBox(height: 6),
+                  Text(
+                    news.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: RekapTheme.onSurfaceVariant,
-                      height: 1.4,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: RekapTheme.onSurface,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Expanded(
+                    child: Text(
+                      news.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        color: RekapTheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

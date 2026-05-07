@@ -110,7 +110,7 @@ class AuthService {
     return UserProfile(
       name: data['name'],
       role: role,
-      childStudentId: data['student_id'],
+      childStudentId: data['student_id']?.toString(),
       homeroomClassName: data['homeroom_class_name'],
     );
   }

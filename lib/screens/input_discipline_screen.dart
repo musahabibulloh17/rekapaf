@@ -27,16 +27,25 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Input Poin Disiplin'),
+              title: const Text('Input Poin Tatib'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: category,
                     items: const [
-                      DropdownMenuItem(value: 'Prestasi', child: Text('Prestasi (+)')),
-                      DropdownMenuItem(value: 'Pelanggaran Ringan', child: Text('Pelanggaran Ringan (-)')),
-                      DropdownMenuItem(value: 'Pelanggaran Berat', child: Text('Pelanggaran Berat (-)')),
+                      DropdownMenuItem(
+                        value: 'Prestasi',
+                        child: Text('Prestasi (+)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Pelanggaran Ringan',
+                        child: Text('Pelanggaran Ringan (-)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Pelanggaran Berat',
+                        child: Text('Pelanggaran Berat (-)'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) setDialogState(() => category = val);
@@ -87,9 +96,9 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
 
       if (title.isEmpty || points == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Data tidak valid')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Data tidak valid')));
         }
         return;
       }
@@ -106,15 +115,15 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Poin berhasil ditambahkan')),
+            const SnackBar(content: Text('Poin tatib berhasil ditambahkan')),
           );
           Navigator.pop(context); // Go back to refresh student list
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Gagal: $e')));
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);
@@ -129,7 +138,7 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
     return Scaffold(
       backgroundColor: RekapTheme.surface,
       appBar: AppBar(
-        title: Text('Disiplin: ${widget.student.name}'),
+        title: Text('Tatib: ${widget.student.name}'),
         backgroundColor: Colors.white,
         foregroundColor: RekapTheme.onSurface,
       ),
@@ -142,7 +151,7 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Riwayat Disiplin',
+                      'Riwayat Tatib',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 18,
@@ -170,9 +179,13 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        Icon(Icons.history, size: 48, color: RekapTheme.outline),
+                        Icon(
+                          Icons.history,
+                          size: 48,
+                          color: RekapTheme.outline,
+                        ),
                         const SizedBox(height: 16),
-                        const Text('Belum ada catatan disiplin.'),
+                        const Text('Belum ada catatan tatib.'),
                       ],
                     ),
                   )
@@ -195,7 +208,9 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                           ),
                           child: Icon(
                             isPositive ? Icons.star : Icons.flag,
-                            color: isPositive ? RekapTheme.primary : RekapTheme.error,
+                            color: isPositive
+                                ? RekapTheme.primary
+                                : RekapTheme.error,
                             size: 20,
                           ),
                         ),
@@ -216,7 +231,9 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                             fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: isPositive ? RekapTheme.primary : RekapTheme.error,
+                            color: isPositive
+                                ? RekapTheme.primary
+                                : RekapTheme.error,
                           ),
                         ),
                       ),

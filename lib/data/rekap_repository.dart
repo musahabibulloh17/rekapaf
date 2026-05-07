@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import '../models/student.dart';
+import '../models/classroom.dart';
 import '../models/school_news.dart';
 import '../models/user_profile.dart';
 import '../services/api_service.dart';
@@ -16,10 +17,12 @@ class RekapRepository {
   // ── Cached Data ───────────────────────────────────────────────────────
   List<Student> _students = [];
   List<SchoolNews> _schoolNews = [];
+  List<Classroom> _classrooms = [];
   bool _isLoading = false;
 
   List<Student> get students => List.unmodifiable(_students);
   List<SchoolNews> get schoolNews => List.unmodifiable(_schoolNews);
+  List<Classroom> get classrooms => List.unmodifiable(_classrooms);
   bool get isLoading => _isLoading;
 
   // ── Current User (delegates to AuthService) ───────────────────────────
@@ -31,17 +34,31 @@ class RekapRepository {
 
   Future<void> loadAll() async {
     _isLoading = true;
-    await Future.wait([loadStudents(), loadNews()]);
+    await Future.wait([loadStudents(), loadNews(), loadClassrooms()]);
     _isLoading = false;
   }
 
   Future<void> refresh() => loadAll();
 
+  // ── Classrooms ───────────────────────────────────────────────────────
+
+  Future<void> loadClassrooms() async {
+    try {
+      final response = await ApiService.get('/classrooms');
+      if (response['success'] == true) {
+        final list = response['data'] as List;
+        _classrooms = list.map((json) => Classroom.fromJson(json)).toList();
+      }
+    } catch (_) {}
+  }
+
   // ── Students ──────────────────────────────────────────────────────────
 
   Future<void> loadStudents() async {
     try {
-      final endpoint = currentUser.isGuru ? '/teacher/students' : '/students';
+      final endpoint = currentUser.isGuru || currentUser.isWaliKelas
+          ? '/teacher/students'
+          : '/students';
       final response = await ApiService.get(endpoint);
       if (response['success'] == true) {
         final list = response['data'] as List;
@@ -87,6 +104,16 @@ class RekapRepository {
 
   /// Search students by name or NISN.
   Future<List<Student>> searchStudents(String query) async {
+    if (currentUser.isGuru || currentUser.isWaliKelas) {
+      return _students
+          .where(
+            (s) =>
+                s.name.toLowerCase().contains(query.toLowerCase()) ||
+                s.nisn.contains(query),
+          )
+          .toList();
+    }
+
     try {
       final response = await ApiService.get('/students?search=$query');
       if (response['success'] == true) {
@@ -246,8 +273,10 @@ class RekapRepository {
   // ── Parsers ───────────────────────────────────────────────────────────
 
   Student _parseStudent(Map<String, dynamic> json) {
-    final subjects = (json['subjects'] as List?)?.map((s) {
-          final details = (s['details'] as List?)?.map((d) {
+    final subjects =
+        (json['subjects'] as List?)?.map((s) {
+          final details =
+              (s['details'] as List?)?.map((d) {
                 return ScoreDetail(
                   id: d['id'] ?? 0,
                   name: d['name'] ?? '',
@@ -270,7 +299,8 @@ class RekapRepository {
         [];
 
     final dpData = json['discipline_points'] as Map<String, dynamic>?;
-    final records = (dpData?['records'] as List?)?.map((r) {
+    final records =
+        (dpData?['records'] as List?)?.map((r) {
           return DisciplineRecord(
             title: r['title'] ?? '',
             category: r['category'] ?? '',

@@ -22,9 +22,16 @@ class DisciplineScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.verified_user_outlined, size: 64, color: RekapTheme.outline),
+              Icon(
+                Icons.verified_user_outlined,
+                size: 64,
+                color: RekapTheme.outline,
+              ),
               const SizedBox(height: 16),
-              const Text('Belum ada data disiplin', style: TextStyle(fontFamily: 'Inter', fontSize: 16)),
+              const Text(
+                'Belum ada data tatib',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 16),
+              ),
             ],
           ),
         ),
@@ -144,14 +151,15 @@ class _HeroGrid extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'TOTAL POIN DISIPLIN',
+                          'TOTAL POIN TATIB',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
-                            color: RekapTheme.onPrimaryContainer
-                                .withValues(alpha: 0.8),
+                            color: RekapTheme.onPrimaryContainer.withValues(
+                              alpha: 0.8,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -172,8 +180,9 @@ class _HeroGrid extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: RekapTheme.onPrimaryContainer
-                                .withValues(alpha: 0.2),
+                            color: RekapTheme.onPrimaryContainer.withValues(
+                              alpha: 0.2,
+                            ),
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: Text(
@@ -194,8 +203,9 @@ class _HeroGrid extends StatelessWidget {
                       child: Icon(
                         Icons.verified_user,
                         size: 120,
-                        color: RekapTheme.onPrimaryContainer
-                            .withValues(alpha: 0.15),
+                        color: RekapTheme.onPrimaryContainer.withValues(
+                          alpha: 0.15,
+                        ),
                       ),
                     ),
                   ],
@@ -275,7 +285,9 @@ class _HeroGrid extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: 1 - (dp.classRanking / 32),
                   minHeight: 8,
-                  backgroundColor: const Color(0xFF426E47).withValues(alpha: 0.1),
+                  backgroundColor: const Color(
+                    0xFF426E47,
+                  ).withValues(alpha: 0.1),
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     Color(0xFF426E47),
                   ),
@@ -469,7 +481,7 @@ class _RecordItem extends StatelessWidget {
                 ),
               ),
               Text(
-                record.isPositive ? 'POIN PRESTASI' : 'POIN DISIPLIN',
+                record.isPositive ? 'POIN PRESTASI' : 'POIN TATIB',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 9,
@@ -489,8 +501,18 @@ class _RecordItem extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
   }

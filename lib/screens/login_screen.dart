@@ -62,7 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() => _errorMessage = 'Tidak dapat terhubung ke server.\nPastikan server berjalan.');
+      setState(
+        () => _errorMessage =
+            'Tidak dapat terhubung ke server.\nPastikan server berjalan.',
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -107,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             backgroundColor: RekapTheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
             duration: const Duration(seconds: 4),
           ),
@@ -129,23 +134,23 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // ── Logo ────────────────────────────────────
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 96,
+                  height: 96,
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: RekapTheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: RekapTheme.primary.withValues(alpha: 0.3),
+                        color: RekapTheme.primary.withValues(alpha: 0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    size: 40,
-                    color: RekapTheme.onPrimaryContainer,
+                  child: Image.asset(
+                    'lib/Logo Yayasan AF.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -182,7 +187,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: RekapTheme.error, size: 20),
+                        const Icon(
+                          Icons.error_outline,
+                          color: RekapTheme.error,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -215,11 +224,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: RekapTheme.outline,
                       size: 20,
                     ),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -288,7 +300,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // ── Server Config Toggle ────────────────────
                 GestureDetector(
-                  onTap: () => setState(() => _showServerConfig = !_showServerConfig),
+                  onTap: () =>
+                      setState(() => _showServerConfig = !_showServerConfig),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -346,10 +359,7 @@ class _LoginScreenState extends State<LoginScreen> {
       style: const TextStyle(fontFamily: 'Inter', fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          fontFamily: 'Inter',
-          color: RekapTheme.outline,
-        ),
+        labelStyle: TextStyle(fontFamily: 'Inter', color: RekapTheme.outline),
         prefixIcon: Icon(icon, color: RekapTheme.outline, size: 20),
         suffixIcon: suffixIcon,
         filled: true,
@@ -362,7 +372,10 @@ class _LoginScreenState extends State<LoginScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: RekapTheme.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }

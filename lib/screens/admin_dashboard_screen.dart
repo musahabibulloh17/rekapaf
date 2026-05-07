@@ -5,6 +5,7 @@ import '../models/school_news.dart';
 import '../models/user_profile.dart';
 import '../theme/rekap_theme.dart';
 import 'announcements_screen.dart';
+import 'master_data_screen.dart';
 import 'news_detail_screen.dart';
 
 /// Dashboard Wali Kelas – Admin Home Screen
@@ -83,7 +84,10 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              _QuickAccessGrid(isGuru: !user.isAdmin),
+              _QuickAccessGrid(
+                isGuru: !user.isAdmin,
+                isSuperAdmin: user.isSuperAdmin,
+              ),
               const SizedBox(height: 28),
 
               // ── Pengumuman Sekolah ──────────────────────────
@@ -122,7 +126,10 @@ class AdminDashboardScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              SizedBox(height: 260, child: _NewsCarousel(news: repo.schoolNews)),
+              SizedBox(
+                height: 260,
+                child: _NewsCarousel(news: repo.schoolNews),
+              ),
             ],
           ),
         ),
@@ -303,8 +310,9 @@ class _SummaryCard extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _QuickAccessGrid extends StatelessWidget {
-  const _QuickAccessGrid({this.isGuru = false});
+  const _QuickAccessGrid({this.isGuru = false, this.isSuperAdmin = false});
   final bool isGuru;
+  final bool isSuperAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -334,10 +342,16 @@ class _QuickAccessGrid extends StatelessWidget {
         ),
         if (!isGuru)
           _QuickAccessItem(
-            icon: Icons.calendar_month,
-            label: 'Attendance',
+            icon: isSuperAdmin ? Icons.storage : Icons.calendar_month,
+            label: isSuperAdmin ? 'Master Data' : 'Attendance',
             isPrimary: false,
-            onTap: () {},
+            onTap: () {
+              if (isSuperAdmin) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MasterDataScreen()),
+                );
+              }
+            },
           ),
         _QuickAccessItem(
           icon: Icons.newspaper,
@@ -509,7 +523,9 @@ class _NewsCardSmall extends StatelessWidget {
         children: [
           if (news.fullImageUrl.isNotEmpty)
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
               child: Image.network(
                 news.fullImageUrl,
                 height: 80,
@@ -525,7 +541,11 @@ class _NewsCardSmall extends StatelessWidget {
                     ),
                   ),
                   child: Center(
-                    child: Icon(_categoryIcon(), size: 36, color: RekapTheme.outline),
+                    child: Icon(
+                      _categoryIcon(),
+                      size: 36,
+                      color: RekapTheme.outline,
+                    ),
                   ),
                 ),
               ),
@@ -540,7 +560,11 @@ class _NewsCardSmall extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Icon(_categoryIcon(), size: 36, color: RekapTheme.outline),
+                child: Icon(
+                  _categoryIcon(),
+                  size: 36,
+                  color: RekapTheme.outline,
+                ),
               ),
             ),
           Padding(

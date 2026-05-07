@@ -10,17 +10,19 @@ class MasterDataScreen extends StatefulWidget {
   State<MasterDataScreen> createState() => _MasterDataScreenState();
 }
 
-class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerProviderStateMixin {
+class _MasterDataScreenState extends State<MasterDataScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = false;
   List<dynamic> _classrooms = [];
   List<dynamic> _students = [];
   List<dynamic> _accounts = [];
+  List<dynamic> _subjects = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadData();
   }
 
@@ -36,19 +38,23 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
       final classRes = await ApiService.get('/classrooms');
       final studRes = await ApiService.get('/students');
       final accRes = await ApiService.get('/accounts');
+      final subjectRes = await ApiService.get('/subjects');
 
       if (mounted) {
         setState(() {
           _classrooms = classRes['data'] ?? [];
           _students = studRes['data'] ?? [];
-          _accounts = (accRes['data'] as List? ?? []).where((a) => a['role'] == 'guru' || a['role'] == 'wali_kelas').toList();
+          _accounts = (accRes['data'] as List? ?? [])
+              .where((a) => a['role'] == 'guru' || a['role'] == 'wali_kelas')
+              .toList();
+          _subjects = subjectRes['data'] ?? [];
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -69,30 +75,48 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
             children: [
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Nama Kelas', hintText: 'Contoh: 10-A IPA'),
+                decoration: const InputDecoration(
+                  labelText: 'Nama Kelas',
+                  hintText: 'Contoh: 10-A IPA',
+                ),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                value: _accounts.any((a) => a['id'] == selectedWaliKelasId) ? selectedWaliKelasId : null,
-                decoration: const InputDecoration(labelText: 'Wali Kelas (Guru)'),
+                value: _accounts.any((a) => a['id'] == selectedWaliKelasId)
+                    ? selectedWaliKelasId
+                    : null,
+                decoration: const InputDecoration(
+                  labelText: 'Wali Kelas (Guru)',
+                ),
                 isExpanded: true,
                 items: [
-                  const DropdownMenuItem<int>(value: null, child: Text('-- Belum Ditentukan --')),
-                  ..._accounts.map((a) => DropdownMenuItem<int>(
-                    value: a['id'],
-                    child: Text(a['name']),
-                  )),
+                  const DropdownMenuItem<int>(
+                    value: null,
+                    child: Text('-- Belum Ditentukan --'),
+                  ),
+                  ..._accounts.map(
+                    (a) => DropdownMenuItem<int>(
+                      value: a['id'],
+                      child: Text(a['name']),
+                    ),
+                  ),
                 ],
-                onChanged: (val) => setStateBuilder(() => selectedWaliKelasId = val),
+                onChanged: (val) =>
+                    setStateBuilder(() => selectedWaliKelasId = val),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
             FilledButton(
               onPressed: () {
                 if (nameCtrl.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nama kelas harus diisi')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Nama kelas harus diisi')),
+                  );
                   return;
                 }
                 Navigator.pop(ctx, {
@@ -115,11 +139,16 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
           await ApiService.put('/classrooms/${classroom['id']}', result);
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data kelas berhasil disimpan')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data kelas berhasil disimpan')),
+          );
           _loadData();
         }
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -133,8 +162,14 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
         title: const Text('Hapus Kelas'),
         content: const Text('Yakin ingin menghapus kelas ini?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -144,7 +179,10 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
         await ApiService.delete('/classrooms/$id');
         _loadData();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -175,7 +213,9 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _classrooms.any((c) => c['name'] == selectedClass) ? selectedClass : null,
+                  value: _classrooms.any((c) => c['name'] == selectedClass)
+                      ? selectedClass
+                      : null,
                   decoration: const InputDecoration(labelText: 'Kelas'),
                   items: _classrooms.map((c) {
                     return DropdownMenuItem<String>(
@@ -183,17 +223,25 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
                       child: Text(c['name']),
                     );
                   }).toList(),
-                  onChanged: (val) => setStateBuilder(() => selectedClass = val),
+                  onChanged: (val) =>
+                      setStateBuilder(() => selectedClass = val),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
             FilledButton(
               onPressed: () {
-                if (nisnCtrl.text.isEmpty || nameCtrl.text.isEmpty || selectedClass == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semua field harus diisi')));
+                if (nisnCtrl.text.isEmpty ||
+                    nameCtrl.text.isEmpty ||
+                    selectedClass == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Semua field harus diisi')),
+                  );
                   return;
                 }
                 Navigator.pop(ctx, {
@@ -217,11 +265,16 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
           await ApiService.put('/students/${student['id']}', result);
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data siswa berhasil disimpan')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data siswa berhasil disimpan')),
+          );
           _loadData();
         }
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -233,8 +286,14 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
         title: const Text('Hapus Siswa'),
         content: const Text('Yakin ingin menghapus siswa ini?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -244,7 +303,117 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
         await ApiService.delete('/students/$id');
         _loadData();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _showSubjectForm() async {
+    final nameCtrl = TextEditingController();
+    final iconCtrl = TextEditingController(text: 'book');
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Tambah Mata Pelajaran'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nama Mata Pelajaran',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: iconCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Icon (opsional)',
+                hintText: 'book',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (nameCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Nama mata pelajaran harus diisi'),
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(ctx, {
+                'name': nameCtrl.text.trim(),
+                'icon': iconCtrl.text.trim().isEmpty
+                    ? 'book'
+                    : iconCtrl.text.trim(),
+              });
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      try {
+        await ApiService.post('/subjects', result);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mata pelajaran berhasil ditambahkan'),
+            ),
+          );
+          _loadData();
+        }
+      } catch (e) {
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _deleteSubject(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Mata Pelajaran'),
+        content: const Text('Yakin ingin menghapus mata pelajaran ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ApiService.delete('/subjects/$id');
+        _loadData();
+      } catch (e) {
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -264,6 +433,7 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
           tabs: const [
             Tab(text: 'Kelas'),
             Tab(text: 'Siswa'),
+            Tab(text: 'Mata Pelajaran'),
           ],
         ),
       ),
@@ -280,20 +450,30 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
                     itemCount: _classrooms.length,
                     itemBuilder: (ctx, i) {
                       final c = _classrooms[i];
-                      final waliKelasName = c['wali_kelas']?['name'] ?? 'Belum ditentukan';
+                      final waliKelasName =
+                          c['wali_kelas']?['name'] ?? 'Belum ditentukan';
                       return Card(
                         child: ListTile(
-                          title: Text(c['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(
+                            c['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle: Text('Wali Kelas: $waliKelasName'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit, color: RekapTheme.primary),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: RekapTheme.primary,
+                                ),
                                 onPressed: () => _showClassForm(classroom: c),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: RekapTheme.error),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: RekapTheme.error,
+                                ),
                                 onPressed: () => _deleteClass(c['id']),
                               ),
                             ],
@@ -313,21 +493,62 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
                       final s = _students[i];
                       return Card(
                         child: ListTile(
-                          leading: CircleAvatar(child: Text(s['name'][0].toUpperCase())),
-                          title: Text(s['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('${s['nisn']} • Kelas: ${s['class_name']}'),
+                          leading: CircleAvatar(
+                            child: Text(s['name'][0].toUpperCase()),
+                          ),
+                          title: Text(
+                            s['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${s['nisn']} • Kelas: ${s['class_name']}',
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit, color: RekapTheme.primary),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: RekapTheme.primary,
+                                ),
                                 onPressed: () => _showStudentForm(student: s),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: RekapTheme.error),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: RekapTheme.error,
+                                ),
                                 onPressed: () => _deleteStudent(s['id']),
                               ),
                             ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Tab Mata Pelajaran
+                RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _subjects.length,
+                    itemBuilder: (ctx, i) {
+                      final subject = _subjects[i];
+                      return Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(child: Icon(Icons.book)),
+                          title: Text(
+                            subject['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text('Icon: ${subject['icon'] ?? 'book'}'),
+                          trailing: IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: RekapTheme.error,
+                            ),
+                            onPressed: () => _deleteSubject(subject['id']),
                           ),
                         ),
                       );
@@ -340,8 +561,10 @@ class _MasterDataScreenState extends State<MasterDataScreen> with SingleTickerPr
         onPressed: () {
           if (_tabController.index == 0) {
             _addClass();
-          } else {
+          } else if (_tabController.index == 1) {
             _showStudentForm();
+          } else {
+            _showSubjectForm();
           }
         },
         backgroundColor: RekapTheme.primaryContainer,

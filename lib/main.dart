@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'data/rekap_repository.dart';
 
 import 'screens/admin_dashboard_screen.dart';
+import 'screens/discipline_management_screen.dart';
 import 'screens/discipline_screen.dart';
 import 'screens/grade_detail_screen.dart';
 import 'screens/login_screen.dart';
@@ -147,31 +148,39 @@ class _AppShellState extends State<AppShell> {
         ? <Widget>[
             AdminDashboardScreen(onRefresh: _refreshData),
             StudentListScreen(onRefresh: _refreshData),
-            ProfileScreen(
-              onLogout: widget.onLogout,
-              onRefresh: _refreshData,
-            ),
+            DisciplineManagementScreen(onRefresh: _refreshData),
+            ProfileScreen(onLogout: widget.onLogout, onRefresh: _refreshData),
           ]
         : <Widget>[
             ParentHomeScreen(onRefresh: _refreshData),
             GradeDetailScreen(onRefresh: _refreshData),
             DisciplineScreen(onRefresh: _refreshData),
-            ProfileScreen(
-              onLogout: widget.onLogout,
-              onRefresh: _refreshData,
-            ),
+            ProfileScreen(onLogout: widget.onLogout, onRefresh: _refreshData),
           ];
 
     final navItems = (isAdmin || isGuru)
         ? const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Siswa'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.verified_user),
+              label: 'Tatib',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
           ]
         : const <BottomNavigationBarItem>[
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Nilai'),
-            BottomNavigationBarItem(icon: Icon(Icons.verified_user), label: 'Disiplin'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart),
+              label: 'Nilai',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.verified_user),
+              label: 'Tatib',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
           ];
 
@@ -182,7 +191,9 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: RekapTheme.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: RekapTheme.primary),
+            )
           : IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

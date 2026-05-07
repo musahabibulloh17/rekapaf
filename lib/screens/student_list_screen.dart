@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
+import '../models/classroom.dart';
 import '../theme/rekap_theme.dart';
 import 'input_discipline_screen.dart';
 import 'input_grades_screen.dart';
@@ -18,11 +19,20 @@ class StudentListScreen extends StatefulWidget {
 
 class _StudentListScreenState extends State<StudentListScreen> {
   String _searchQuery = '';
+  Classroom? _selectedClassroom;
 
   @override
   Widget build(BuildContext context) {
     final repo = RekapRepository.instance;
+    
+    if (_selectedClassroom == null) {
+      return _buildClassroomList(repo);
+    }
+
     final filteredStudents = repo.students.where((s) {
+      // Filter by class first
+      if (s.className != _selectedClassroom!.name) return false;
+      
       if (_searchQuery.isEmpty) return true;
       return s.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           s.nisn.contains(_searchQuery);
@@ -47,24 +57,42 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Daftar Siswa',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: RekapTheme.onSurface,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${repo.students.length} siswa terdaftar',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          color: RekapTheme.onSurfaceVariant,
-                        ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => setState(() => _selectedClassroom = null),
+                            icon: const Icon(Icons.arrow_back),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Siswa ${_selectedClassroom!.name}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                    color: RekapTheme.onSurface,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${filteredStudents.length} siswa di kelas ini',
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    color: RekapTheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       _SearchBar(
@@ -116,10 +144,180 @@ class _StudentListScreenState extends State<StudentListScreen> {
     );
   }
 
+  Widget _buildClassroomList(RekapRepository repo) {
+    return Scaffold(
+      backgroundColor: RekapTheme.surface,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            if (widget.onRefresh != null) {
+              widget.onRefresh!();
+            } else {
+              await repo.refresh();
+            }
+          },
+          child: CustomScrollView(
+            slivers: [
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 24, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Daftar Kelas',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: RekapTheme.onSurface,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Pilih kelas untuk melihat daftar siswa',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          color: RekapTheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (repo.classrooms.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.class_outlined, size: 64, color: RekapTheme.outline),
+                        const SizedBox(height: 16),
+                        const Text('Tidak ada kelas ditemukan',
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 15)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.1,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final classroom = repo.classrooms[index];
+                      final studentCount = repo.students
+                          .where((s) => s.className == classroom.name)
+                          .length;
+                      return _ClassroomCard(
+                        classroom: classroom,
+                        studentCount: studentCount,
+                        onTap: () => setState(() => _selectedClassroom = classroom),
+                      );
+                    },
+                    childCount: repo.classrooms.length,
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onStudentTap(BuildContext context, Student student) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => _StudentDetailPage(student: student),
+      ),
+    );
+  }
+}
+
+class _ClassroomCard extends StatelessWidget {
+  const _ClassroomCard({
+    required this.classroom,
+    required this.studentCount,
+    required this.onTap,
+  });
+
+  final Classroom classroom;
+  final int studentCount;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: RekapTheme.outlineVariant.withValues(alpha: 0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: RekapTheme.primaryContainer.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.class_outlined,
+                  color: RekapTheme.primary,
+                  size: 24,
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    classroom.name,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: RekapTheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$studentCount Siswa',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: RekapTheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
