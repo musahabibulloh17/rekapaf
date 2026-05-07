@@ -367,7 +367,7 @@ class RekapRepository {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      date: DateTime.tryParse(json['news_date'] ?? '') ?? DateTime.now(),
+      date: (DateTime.tryParse(json['updated_at'] ?? json['created_at'] ?? json['news_date'] ?? '') ?? DateTime.now()).toLocal(),
       category: category,
       imageUrl: json['image_url'],
       focalX: (json['focal_x'] as num?)?.toDouble() ?? 0.0,
