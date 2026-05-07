@@ -334,6 +334,7 @@ class FocalPointPicker extends StatefulWidget {
 
 class _FocalPointPickerState extends State<FocalPointPicker> {
   late Alignment _alignment;
+  Alignment _startAlignment = Alignment.center;
 
   @override
   void initState() {
@@ -344,12 +345,16 @@ class _FocalPointPickerState extends State<FocalPointPicker> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanUpdate: (details) {
+      onLongPressStart: (details) {
+        _startAlignment = _alignment;
+      },
+      onLongPressMoveUpdate: (details) {
         setState(() {
-          _alignment += Alignment(-details.delta.dx * 0.01, -details.delta.dy * 0.01);
+          double dx = -details.localOffsetFromOrigin.dx * 0.01;
+          double dy = -details.localOffsetFromOrigin.dy * 0.01;
           _alignment = Alignment(
-            _alignment.x.clamp(-1.0, 1.0),
-            _alignment.y.clamp(-1.0, 1.0),
+            (_startAlignment.x + dx).clamp(-1.0, 1.0),
+            (_startAlignment.y + dy).clamp(-1.0, 1.0),
           );
         });
         widget.onAlignmentChanged(_alignment);
@@ -379,7 +384,7 @@ class _FocalPointPickerState extends State<FocalPointPicker> {
               const Positioned(
                 bottom: 8, left: 8, right: 8,
                 child: Text(
-                  'Geser gambar untuk menyesuaikan titik fokus',
+                  'Tekan lama (Long press) lalu geser gambar',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
