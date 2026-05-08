@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../data/rekap_repository.dart';
 import '../models/school_news.dart';
 import '../models/user_profile.dart';
 import '../theme/rekap_theme.dart';
+import 'account_management_screen.dart';
 import 'announcements_screen.dart';
+import 'discipline_management_screen.dart';
 import 'master_data_screen.dart';
 import 'news_detail_screen.dart';
 
@@ -140,7 +143,7 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 260,
+                height: 320,
                 child: _NewsCarousel(news: repo.schoolNews),
               ),
             ],
@@ -338,19 +341,31 @@ class _QuickAccessGrid extends StatelessWidget {
       childAspectRatio: 1.6,
       children: [
         _QuickAccessItem(
-          icon: Icons.person_search,
-          label: 'Student List',
+          icon: Icons.gavel,
+          label: 'Tatib',
           isPrimary: true,
           onTap: () {
-            // Navigator to student list tab is handled by main.dart indexing
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const DisciplineManagementScreen(),
+              ),
+            );
           },
         ),
         _QuickAccessItem(
-          icon: Icons.edit_note,
-          label: 'Input Grades',
+          icon: isSuperAdmin ? Icons.manage_accounts : Icons.edit_note,
+          label: isSuperAdmin ? 'Kelola Akun' : 'Input Grades',
           isPrimary: false,
           onTap: () {
-            // Navigator to student list tab
+            if (isSuperAdmin) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AccountManagementScreen(),
+                ),
+              );
+            } else {
+              // Navigator to student list tab
+            }
           },
         ),
         if (!isGuru)
@@ -539,105 +554,111 @@ class _NewsCardSmall extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(14),
               ),
-              child: Image.network(
-                news.fullImageUrl,
-                height: 140,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                alignment: Alignment(news.focalX, news.focalY),
-                errorBuilder: (ctx, err, stack) => Container(
-                  height: 140,
+              child: AspectRatio(
+                aspectRatio: 2.0,
+                child: Image.network(
+                  news.fullImageUrl,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: RekapTheme.surfaceContainerLow,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(14),
+                  alignment: Alignment(news.focalX, news.focalY),
+                  fit: BoxFit.cover,
+                  errorBuilder: (ctx, err, stack) => Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: RekapTheme.surfaceContainerLow,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(14),
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      _categoryIcon(),
-                      size: 36,
-                      color: RekapTheme.outline,
+                    child: Center(
+                      child: Icon(
+                        _categoryIcon(),
+                        size: 36,
+                        color: RekapTheme.outline,
+                      ),
                     ),
                   ),
                 ),
               ),
             )
           else
-            Container(
-              height: 140,
-              decoration: BoxDecoration(
-                color: RekapTheme.surfaceContainerLow,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(14),
+            AspectRatio(
+              aspectRatio: 2.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: RekapTheme.surfaceContainerLow,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(14),
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Icon(
-                  _categoryIcon(),
-                  size: 36,
-                  color: RekapTheme.outline,
+                child: Center(
+                  child: Icon(
+                    _categoryIcon(),
+                    size: 36,
+                    color: RekapTheme.outline,
+                  ),
                 ),
               ),
             ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _categoryColor(),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      news.category.label.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
-                        color: _categoryTextColor(),
-                      ),
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    news.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                  decoration: BoxDecoration(
+                    color: _categoryColor(),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    news.category.label.toUpperCase(),
+                    style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 14,
+                      fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: RekapTheme.onSurface,
-                      height: 1.3,
+                      letterSpacing: 0.6,
+                      color: _categoryTextColor(),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Expanded(
-                    child: Text(
-                      news.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 11,
-                        color: RekapTheme.onSurfaceVariant,
-                        height: 1.4,
-                      ),
-                    ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  DateFormat('d MMM yyyy').format(news.date),
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    color: RekapTheme.onSurfaceVariant,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  news.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: RekapTheme.onSurface,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  news.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    color: RekapTheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

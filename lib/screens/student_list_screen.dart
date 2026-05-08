@@ -598,142 +598,208 @@ class _StudentDetailPage extends StatefulWidget {
 }
 
 class _StudentDetailPageState extends State<_StudentDetailPage> {
+  Student? _student;
+  bool _isLoading = false;
+  int? _selectedGrade;
+  String? _selectedSemester;
+
+  @override
+  void initState() {
+    super.initState();
+    _student = widget.student;
+    if (_student != null) {
+      _selectedGrade = _student!.gradeLevel;
+      _selectedSemester = _student!.semester;
+    }
+  }
+
+  Future<void> _updateFilter(int grade, String semester) async {
+    setState(() {
+      _selectedGrade = grade;
+      _selectedSemester = semester;
+      _isLoading = true;
+    });
+
+    final updated = await RekapRepository.instance.getStudentById(
+      widget.student.id,
+      gradeLevel: grade,
+      semester: semester,
+    );
+
+    if (mounted) {
+      setState(() {
+        if (updated != null) _student = updated;
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _openDisciplineDetail() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => InputDisciplineScreen(student: widget.student),
+        builder: (_) => InputDisciplineScreen(student: _student ?? widget.student),
       ),
     );
-    // When returning, if data was changed, the parent should reload. 
-    // Usually handled by state management, but here we can just rebuild.
-    if (mounted) setState(() {});
+    if (mounted) {
+      // Re-fetch to get latest points
+      _updateFilter(_selectedGrade!, _selectedSemester!);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final student = widget.student;
-
     return Scaffold(
       backgroundColor: RekapTheme.surface,
       appBar: AppBar(
-        title: Text(student.name),
+        title: Text(_student?.name ?? widget.student.name),
         backgroundColor: Colors.white,
         foregroundColor: RekapTheme.onSurface,
         elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: Stack(
         children: [
-          // Profile Header
-          Container(
-            decoration: BoxDecoration(
-              color: RekapTheme.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: Row(
-              children: [
+          ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              // Profile Header
+              if (_student != null)
                 Container(
-                  width: 60,
-                  height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16),
+                    color: RekapTheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Center(
-                    child: Text(
-                      student.name.characters.first,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
                     children: [
-                      Text(
-                        student.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: RekapTheme.onPrimaryContainer,
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _student!.name.characters.first,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                      Text(
-                        'NISN: ${student.nisn} • Kelas: ${student.className}',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          color:
-                              RekapTheme.onPrimaryContainer.withValues(alpha: 0.8),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _student!.name,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                color: RekapTheme.onPrimaryContainer,
+                              ),
+                            ),
+                            Text(
+                              'NISN: ${_student!.nisn} • Kelas: ${_student!.className}',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                color:
+                                    RekapTheme.onPrimaryContainer.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
+              const SizedBox(height: 20),
+    
+              // Stats Grid
+              if (_student != null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DetailStatCard(
+                        label: 'Rata-rata',
+                        value: _student!.averageScore.toStringAsFixed(1),
+                        icon: Icons.assessment,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _DetailStatCard(
+                        label: 'Disiplin',
+                        value: _student!.disciplinePoints.totalPoints.toString(),
+                        icon: Icons.verified_user,
+                        onTap: _openDisciplineDetail,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _DetailStatCard(
+                        label: 'Kehadiran',
+                        value: '${_student!.attendance.percentage.toInt()}%',
+                        icon: Icons.event_available,
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 24),
 
-          // Stats Grid
-          Row(
-            children: [
-              Expanded(
-                child: _DetailStatCard(
-                  label: 'Rata-rata',
-                  value: student.averageScore.toStringAsFixed(1),
-                  icon: Icons.assessment,
+              // Period Filter
+              const Text(
+                'Filter Masa Akademik',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: RekapTheme.onSurface,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _DetailStatCard(
-                  label: 'Disiplin',
-                  value: student.disciplinePoints.totalPoints.toString(),
-                  icon: Icons.verified_user,
-                  onTap: _openDisciplineDetail,
+              const SizedBox(height: 8),
+              _PeriodFilterDropdown(
+                currentGrade: _selectedGrade ?? widget.student.gradeLevel,
+                currentSemester: _selectedSemester ?? widget.student.semester,
+                student: widget.student,
+                onChanged: _updateFilter,
+              ),
+              const SizedBox(height: 24),
+    
+              // Subjects
+              const Text(
+                'Nilai Per Mata Pelajaran',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: RekapTheme.onSurface,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _DetailStatCard(
-                  label: 'Kehadiran',
-                  value: '${student.attendance.percentage.toInt()}%',
-                  icon: Icons.event_available,
+              const SizedBox(height: 12),
+              if (_student != null)
+                ..._student!.subjects.map(
+                  (subject) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _SubjectDetailTile(
+                      subject: subject,
+                      studentId: _student!.id,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Subjects
-          const Text(
-            'Nilai Per Mata Pelajaran',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: RekapTheme.onSurface,
+          if (_isLoading)
+            Container(
+              color: Colors.black.withValues(alpha: 0.1),
+              child: const Center(child: CircularProgressIndicator()),
             ),
-          ),
-          const SizedBox(height: 12),
-          ...student.subjects.map(
-            (subject) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _SubjectDetailTile(
-                subject: subject,
-                studentId: student.id,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -792,6 +858,71 @@ class _DetailStatCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+class _PeriodFilterDropdown extends StatelessWidget {
+  const _PeriodFilterDropdown({
+    required this.currentGrade,
+    required this.currentSemester,
+    required this.student,
+    required this.onChanged,
+  });
+
+  final int currentGrade;
+  final String currentSemester;
+  final Student student;
+  final void Function(int grade, String semester) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> options = [
+      {
+        'grade': student.gradeLevel,
+        'semester': student.semester,
+        'label': 'Kelas ${student.gradeLevel} - ${student.semester} (Aktif)',
+      },
+      ...student.histories.map((h) => {
+            'grade': h.gradeLevel,
+            'semester': h.semester,
+            'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
+          }),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: RekapTheme.surfaceContainer),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: options.indexWhere((o) => o['grade'] == currentGrade && o['semester'] == currentSemester),
+          isExpanded: true,
+          icon: const Icon(Icons.expand_more, color: RekapTheme.primary),
+          items: List.generate(options.length, (index) {
+            final opt = options[index];
+            return DropdownMenuItem<int>(
+              value: index,
+              child: Text(
+                opt['label'],
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: RekapTheme.onSurface,
+                ),
+              ),
+            );
+          }),
+          onChanged: (index) {
+            if (index != null) {
+              onChanged(options[index]['grade'], options[index]['semester']);
+            }
+          },
         ),
       ),
     );
@@ -861,25 +992,25 @@ class _SubjectDetailTileState extends State<_SubjectDetailTile> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    widget.subject.score.toInt().toString(),
+                    widget.subject.score?.toInt().toString() ?? '-',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: widget.subject.isPassing
-                          ? RekapTheme.primary
-                          : RekapTheme.error,
+                      color: widget.subject.score == null 
+                          ? RekapTheme.outline 
+                          : (widget.subject.isPassing ? RekapTheme.primary : RekapTheme.error),
                     ),
                   ),
                   Text(
-                    widget.subject.status,
+                    widget.subject.score == null ? 'BELUM ADA' : widget.subject.status,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: widget.subject.isPassing
-                          ? RekapTheme.primary
-                          : RekapTheme.error,
+                      color: widget.subject.score == null 
+                          ? RekapTheme.outline 
+                          : (widget.subject.isPassing ? RekapTheme.primary : RekapTheme.error),
                     ),
                   ),
                 ],

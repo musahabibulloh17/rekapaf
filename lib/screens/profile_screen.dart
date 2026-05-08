@@ -69,7 +69,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(99),
@@ -78,8 +81,10 @@ class ProfileScreen extends StatelessWidget {
                       user.isSuperAdmin
                           ? 'Super Admin'
                           : (user.isGuru
-                              ? 'Guru'
-                              : (user.isParent ? 'Orang Tua / Wali' : 'Wali Kelas')),
+                                ? 'Guru'
+                                : (user.isParent
+                                      ? 'Orang Tua / Wali'
+                                      : 'Wali Kelas')),
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
@@ -108,9 +113,7 @@ class ProfileScreen extends StatelessWidget {
                 title: 'Master Data',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const MasterDataScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const MasterDataScreen()),
                   );
                 },
               ),
@@ -134,17 +137,26 @@ class ProfileScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     title: const Text(
                       'Tentang Aplikasi',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     content: const Text(
                       'Aplikasi REKAPAF dirancang untuk memudahkan pemantauan dan pengelolaan akademik serta disiplin siswa secara real-time.\n\n'
-                      'Aplikasi ini dikembangkan oleh dua mahasiswa, yaitu:\n'
+                      'Aplikasi ini dikembangkan oleh lulusan Sma Al Furqan Jember, yaitu:\n'
                       '• Musa Habibulloh Al Faruq (Teknik Informatika, Polije)\n'
                       '• Umar Khoththob (Teknik Elektro, Unej)',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5),
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
                     ),
                     actions: [
                       FilledButton(
@@ -230,7 +242,11 @@ class _MenuItem extends StatelessWidget {
             color: RekapTheme.onSurface,
           ),
         ),
-        trailing: const Icon(Icons.chevron_right, color: RekapTheme.outline, size: 20),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: RekapTheme.outline,
+          size: 20,
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         onTap: onTap ?? () {},
@@ -296,7 +312,10 @@ class _LogoutButtonState extends State<_LogoutButton> {
             ? const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: RekapTheme.error),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: RekapTheme.error,
+                ),
               )
             : const Icon(Icons.logout, color: RekapTheme.error),
         label: const Text(
@@ -310,7 +329,9 @@ class _LogoutButtonState extends State<_LogoutButton> {
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: RekapTheme.error),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );

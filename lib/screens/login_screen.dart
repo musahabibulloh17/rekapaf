@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Rekapitulasi Akademik & Prestasi',
+                  'Rekapitulasi Akademik Al Furqan',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,

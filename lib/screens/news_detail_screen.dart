@@ -41,28 +41,33 @@ class NewsDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (imageUrl.isNotEmpty)
-              Image.network(
-                imageUrl,
-                width: double.infinity,
-                fit: BoxFit.contain,
-                errorBuilder: (ctx, err, stack) => Container(
-                  height: 200,
-                  color: RekapTheme.surfaceContainerLow,
-                  child: const Center(
-                    child: Icon(Icons.broken_image, size: 48, color: RekapTheme.outline),
+              AspectRatio(
+                aspectRatio: 2.0,
+                child: Image.network(
+                  imageUrl,
+                  width: double.infinity,
+                  alignment: Alignment(news.focalX, news.focalY),
+                  fit: BoxFit.cover,
+                  errorBuilder: (ctx, err, stack) => Container(
+                    color: RekapTheme.surfaceContainerLow,
+                    child: const Center(
+                      child: Icon(Icons.broken_image, size: 48, color: RekapTheme.outline),
+                    ),
                   ),
                 ),
               )
             else
-              Container(
-                height: 200,
-                width: double.infinity,
-                color: RekapTheme.surfaceContainerLow,
-                child: Center(
-                  child: Icon(
-                    _iconForCategory(news.category),
-                    size: 64,
-                    color: RekapTheme.outline,
+              AspectRatio(
+                aspectRatio: 2.0,
+                child: Container(
+                  width: double.infinity,
+                  color: RekapTheme.surfaceContainerLow,
+                  child: Center(
+                    child: Icon(
+                      _iconForCategory(news.category),
+                      size: 64,
+                      color: RekapTheme.outline,
+                    ),
                   ),
                 ),
               ),

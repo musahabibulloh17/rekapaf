@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'account_management_screen.dart';
 import '../services/api_service.dart';
 import '../theme/rekap_theme.dart';
 
@@ -22,7 +23,7 @@ class _MasterDataScreenState extends State<MasterDataScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadData();
   }
 
@@ -418,6 +419,130 @@ class _MasterDataScreenState extends State<MasterDataScreen>
     }
   }
 
+  void _openAccountManagement() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AccountManagementScreen()));
+  }
+
+  Future<Map<String, List<int>>?> _showAssignmentSelection(
+    Map<String, dynamic> account,
+  ) async {
+    final currentSubjectIds = (account['subjects'] as List? ?? [])
+        .map((s) => s['id'] as int)
+        .toList();
+    final currentClassroomIds = (account['classrooms'] as List? ?? [])
+        .map((c) => c['id'] as int)
+        .toList();
+
+    List<int> selectedSubjectIds = List.from(currentSubjectIds);
+    List<int> selectedClassroomIds = List.from(currentClassroomIds);
+
+    return showDialog<Map<String, List<int>>>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Atur Penugasan: ${account['name']}'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Mata Pelajaran',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  ..._subjects.map((subject) {
+                    final isSelected = selectedSubjectIds.contains(
+                      subject['id'],
+                    );
+                    return CheckboxListTile(
+                      title: Text(subject['name']),
+                      value: isSelected,
+                      dense: true,
+                      onChanged: (val) {
+                        setDialogState(() {
+                          if (val == true) {
+                            selectedSubjectIds.add(subject['id']);
+                          } else {
+                            selectedSubjectIds.remove(subject['id']);
+                          }
+                        });
+                      },
+                    );
+                  }),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Kelas',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  ..._classrooms.map((classroom) {
+                    final isSelected = selectedClassroomIds.contains(
+                      classroom['id'],
+                    );
+                    return CheckboxListTile(
+                      title: Text(classroom['name']),
+                      value: isSelected,
+                      dense: true,
+                      onChanged: (val) {
+                        setDialogState(() {
+                          if (val == true) {
+                            selectedClassroomIds.add(classroom['id']);
+                          } else {
+                            selectedClassroomIds.remove(classroom['id']);
+                          }
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, {
+                'subjects': selectedSubjectIds,
+                'classrooms': selectedClassroomIds,
+              }),
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateGuruAssignments(Map<String, dynamic> account) async {
+    final selectedAssignments = await _showAssignmentSelection(account);
+    if (selectedAssignments == null) return;
+
+    try {
+      await ApiService.put('/accounts/${account['id']}/assignments', {
+        'subject_ids': selectedAssignments['subjects'],
+        'classroom_ids': selectedAssignments['classrooms'],
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Penugasan guru berhasil diperbarui')),
+        );
+        _loadData();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memperbarui penugasan: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -433,6 +558,7 @@ class _MasterDataScreenState extends State<MasterDataScreen>
           tabs: const [
             Tab(text: 'Kelas'),
             Tab(text: 'Siswa'),
+            Tab(text: 'Guru'),
             Tab(text: 'Mata Pelajaran'),
           ],
         ),
@@ -527,6 +653,174 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                     },
                   ),
                 ),
+                // Tab Guru
+                RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _accounts.length + 1,
+                    itemBuilder: (ctx, i) {
+                      if (i == 0) {
+                        return Card(
+                          child: ListTile(
+                            title: const Text(
+                              'Kelola Akun Guru',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: const Text(
+                              'Konfirmasi, assign, dan hapus akun guru/wali kelas',
+                            ),
+                            trailing: FilledButton(
+                              onPressed: _openAccountManagement,
+                              child: const Text('Kelola'),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final account = _accounts[i - 1];
+                      final roleLabel = account['role'] == 'wali_kelas'
+                          ? 'Wali Kelas'
+                          : 'Guru Mata Pelajaran';
+                      final subjects = account['subjects'] as List? ?? [];
+                      final classrooms = account['classrooms'] as List? ?? [];
+
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: CircleAvatar(
+                                  child: Text(account['name'][0].toUpperCase()),
+                                ),
+                                title: Text(
+                                  account['name'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(roleLabel),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.manage_accounts,
+                                    color: RekapTheme.primary,
+                                  ),
+                                  onPressed: _openAccountManagement,
+                                ),
+                              ),
+                              if (subjects.isNotEmpty || classrooms.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (subjects.isNotEmpty) ...[
+                                        const Text(
+                                          'Mapel:',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Wrap(
+                                          spacing: 4,
+                                          runSpacing: 4,
+                                          children: subjects
+                                              .map(
+                                                (s) => Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: RekapTheme
+                                                        .primaryFixed
+                                                        .withOpacity(0.3),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    s['name'],
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: RekapTheme.primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 8),
+                                      ],
+                                      if (classrooms.isNotEmpty) ...[
+                                        const Text(
+                                          'Kelas:',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Wrap(
+                                          spacing: 4,
+                                          runSpacing: 4,
+                                          children: classrooms
+                                              .map(
+                                                (c) => Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: RekapTheme
+                                                        .tertiaryFixed
+                                                        .withOpacity(0.3),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    c['name'],
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color:
+                                                          RekapTheme.tertiary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: FilledButton.tonal(
+                                  onPressed: () => _updateGuruAssignments(
+                                    account as Map<String, dynamic>,
+                                  ),
+                                  child: const Text('Atur Penugasan'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 // Tab Mata Pelajaran
                 RefreshIndicator(
                   onRefresh: _loadData,
@@ -563,6 +857,8 @@ class _MasterDataScreenState extends State<MasterDataScreen>
             _addClass();
           } else if (_tabController.index == 1) {
             _showStudentForm();
+          } else if (_tabController.index == 2) {
+            _openAccountManagement();
           } else {
             _showSubjectForm();
           }

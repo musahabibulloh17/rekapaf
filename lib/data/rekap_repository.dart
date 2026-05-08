@@ -18,6 +18,7 @@ class RekapRepository {
   List<Student> _students = [];
   List<SchoolNews> _schoolNews = [];
   List<Classroom> _classrooms = [];
+  Map<int, List<String>> _subjectTeachers = {};
   bool _isLoading = false;
 
   List<Student> get students => List.unmodifiable(_students);
@@ -34,6 +35,7 @@ class RekapRepository {
 
   Future<void> loadAll() async {
     _isLoading = true;
+    await loadTeacherAssignments();
     await Future.wait([loadStudents(), loadNews(), loadClassrooms()]);
     _isLoading = false;
   }
@@ -56,6 +58,9 @@ class RekapRepository {
 
   Future<void> loadStudents() async {
     try {
+      if (_subjectTeachers.isEmpty) {
+        await loadTeacherAssignments();
+      }
       final endpoint = currentUser.isGuru || currentUser.isWaliKelas
           ? '/teacher/students'
           : '/students';
@@ -69,9 +74,55 @@ class RekapRepository {
     }
   }
 
-  Future<Student?> getStudentById(int id) async {
+  Future<void> loadTeacherAssignments() async {
     try {
-      final response = await ApiService.get('/students/$id');
+      final response = await ApiService.get('/accounts');
+      if (response['success'] == true) {
+        final list = response['data'] as List? ?? [];
+        final Map<int, Set<String>> grouped = {};
+
+        for (final account in list) {
+          if (account is! Map<String, dynamic>) continue;
+          final role = account['role'];
+          if (role != 'guru' && role != 'wali_kelas') continue;
+          final name = (account['name'] ?? '').toString().trim();
+          if (name.isEmpty) continue;
+
+          final subjects = account['subjects'] as List? ?? [];
+          for (final subject in subjects) {
+            if (subject is! Map<String, dynamic>) continue;
+            final id = subject['id'] as int?;
+            if (id == null) continue;
+            grouped.putIfAbsent(id, () => <String>{}).add(name);
+          }
+        }
+
+        _subjectTeachers = grouped.map(
+          (key, value) => MapEntry(key, value.toList()..sort()),
+        );
+      }
+    } catch (_) {
+      // Ignore teacher assignment errors to avoid blocking student data.
+    }
+  }
+
+  Future<Student?> getStudentById(
+    int id, {
+    int? gradeLevel,
+    String? semester,
+  }) async {
+    try {
+      String path = '/students/$id';
+      final Map<String, String> queryParams = {};
+      if (gradeLevel != null)
+        queryParams['grade_level'] = gradeLevel.toString();
+      if (semester != null) queryParams['semester'] = semester;
+
+      if (queryParams.isNotEmpty) {
+        path += '?${Uri(queryParameters: queryParams).query}';
+      }
+
+      final response = await ApiService.get(path);
       if (response['success'] == true) {
         return _parseStudent(response['data']);
       }
@@ -297,9 +348,12 @@ class RekapRepository {
           return SubjectScore(
             id: s['id'] ?? 0,
             subjectId: s['subject_id'] ?? 0,
+            gradeLevel: s['grade_level'] ?? 12,
             name: s['name'] ?? '',
-            score: (s['score'] as num?)?.toDouble() ?? 0,
-            teacher: s['teacher'] ?? '-',
+            score: s['score'] != null ? (s['score'] as num).toDouble() : null,
+            teacher: _subjectTeachers[s['subject_id'] ?? 0]?.isNotEmpty == true
+                ? _subjectTeachers[s['subject_id'] ?? 0]!.join(' & ')
+                : s['teacher'] ?? '-',
             icon: s['icon'] ?? 'book',
             details: details,
           );
@@ -321,11 +375,26 @@ class RekapRepository {
 
     final attData = json['attendance'] as Map<String, dynamic>?;
 
+    final histories =
+        (json['histories'] as List?)?.map((h) {
+          return StudentHistory(
+            id: h['id'] ?? 0,
+            className: h['class_name'] ?? '',
+            gradeLevel: h['grade_level'] ?? 0,
+            semester: h['semester'] ?? '',
+            academicYear: h['academic_year'] ?? '',
+          );
+        }).toList() ??
+        [];
+
     return Student(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       nisn: json['nisn'] ?? '',
       className: json['class_name'] ?? '',
+      gradeLevel: json['grade_level'] ?? 12,
+      semester: json['semester'] ?? 'Ganjil',
+      academicYear: json['academic_year'] ?? '',
       photoUrl: json['photo_url'],
       subjects: subjects,
       disciplinePoints: DisciplinePoints(
@@ -341,6 +410,7 @@ class RekapRepository {
         sakit: attData?['sakit'] ?? 0,
         alfa: attData?['alfa'] ?? 0,
       ),
+      histories: histories,
     );
   }
 

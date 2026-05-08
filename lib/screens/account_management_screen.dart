@@ -7,16 +7,16 @@ class AccountManagementScreen extends StatefulWidget {
   const AccountManagementScreen({super.key});
 
   @override
-  State<AccountManagementScreen> createState() => _AccountManagementScreenState();
+  State<AccountManagementScreen> createState() =>
+      _AccountManagementScreenState();
 }
 
-class _AccountManagementScreenState extends State<AccountManagementScreen> with SingleTickerProviderStateMixin {
+class _AccountManagementScreenState extends State<AccountManagementScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = false;
   List<dynamic> _pendingAccounts = [];
   List<dynamic> _activeAccounts = [];
-  List<dynamic> _subjects = [];
-  List<dynamic> _classrooms = [];
 
   @override
   void initState() {
@@ -36,22 +36,18 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     try {
       final pendingRes = await ApiService.get('/accounts/pending');
       final activeRes = await ApiService.get('/accounts');
-      final subjectsRes = await ApiService.get('/subjects');
-      final classroomsRes = await ApiService.get('/classrooms');
 
       if (mounted) {
         setState(() {
           _pendingAccounts = pendingRes['data'] ?? [];
           _activeAccounts = activeRes['data'] ?? [];
-          _subjects = subjectsRes['data'] ?? [];
-          _classrooms = classroomsRes['data'] ?? [];
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -59,18 +55,10 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
   }
 
   Future<void> _approveAccount(dynamic account) async {
-    Map<String, List<int>>? selectedAssignments;
-    
-    if (account['role'] == 'guru') {
-      selectedAssignments = await _showAssignmentSelection(account);
-      if (selectedAssignments == null) return;
-    }
-
     try {
-      await ApiService.post('/accounts/${account['id']}/approve', {
-        if (selectedAssignments != null) 'subject_ids': selectedAssignments['subjects'],
-        if (selectedAssignments != null) 'classroom_ids': selectedAssignments['classrooms'],
-      });
+      // Approve account without assigning subjects/classes here.
+      // Assignments are managed from Master Data screen.
+      await ApiService.post('/accounts/${account['id']}/approve', {});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Akun berhasil dikonfirmasi')),
@@ -86,108 +74,14 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     }
   }
 
-  Future<Map<String, List<int>>?> _showAssignmentSelection(dynamic account) async {
-    final currentSubjectIds = (account['subjects'] as List? ?? []).map((s) => s['id'] as int).toList();
-    final currentClassroomIds = (account['classrooms'] as List? ?? []).map((c) => c['id'] as int).toList();
-    
-    List<int> selectedSubjectIds = List.from(currentSubjectIds);
-    List<int> selectedClassroomIds = List.from(currentClassroomIds);
-
-    return showDialog<Map<String, List<int>>>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Atur Penugasan: ${account['name']}'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Mata Pelajaran', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ..._subjects.map((subject) {
-                    final isSelected = selectedSubjectIds.contains(subject['id']);
-                    return CheckboxListTile(
-                      title: Text(subject['name']),
-                      value: isSelected,
-                      dense: true,
-                      onChanged: (val) {
-                        setDialogState(() {
-                          if (val == true) selectedSubjectIds.add(subject['id']);
-                          else selectedSubjectIds.remove(subject['id']);
-                        });
-                      },
-                    );
-                  }),
-                  const SizedBox(height: 16),
-                  const Text('Kelas', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ..._classrooms.map((classroom) {
-                    final isSelected = selectedClassroomIds.contains(classroom['id']);
-                    return CheckboxListTile(
-                      title: Text(classroom['name']),
-                      value: isSelected,
-                      dense: true,
-                      onChanged: (val) {
-                        setDialogState(() {
-                          if (val == true) selectedClassroomIds.add(classroom['id']);
-                          else selectedClassroomIds.remove(classroom['id']);
-                        });
-                      },
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, {
-                'subjects': selectedSubjectIds,
-                'classrooms': selectedClassroomIds,
-              }),
-              child: const Text('Simpan'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _updateGuruAssignments(dynamic account) async {
-    final selectedAssignments = await _showAssignmentSelection(account);
-    if (selectedAssignments == null) return;
-
-    try {
-      await ApiService.put('/accounts/${account['id']}/assignments', {
-        'subject_ids': selectedAssignments['subjects'],
-        'classroom_ids': selectedAssignments['classrooms'],
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Penugasan guru berhasil diperbarui')),
-        );
-        _loadAccounts();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memperbarui penugasan: $e')),
-        );
-      }
-    }
-  }
-
   Future<void> _deleteAccount(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus Akun'),
-        content: const Text('Apakah Anda yakin ingin menolak / menghapus akun ini?'),
+        content: const Text(
+          'Apakah Anda yakin ingin menolak / menghapus akun ini?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -207,16 +101,16 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     try {
       await ApiService.delete('/accounts/$id');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Akun berhasil dihapus')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Akun berhasil dihapus')));
         _loadAccounts();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menghapus akun: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal menghapus akun: $e')));
       }
     }
   }
@@ -230,7 +124,9 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
             Icon(Icons.inbox, size: 64, color: RekapTheme.outline),
             const SizedBox(height: 16),
             Text(
-              isPending ? 'Tidak ada akun yang menunggu konfirmasi.' : 'Tidak ada akun aktif.',
+              isPending
+                  ? 'Tidak ada akun yang menunggu konfirmasi.'
+                  : 'Tidak ada akun aktif.',
               style: const TextStyle(color: RekapTheme.onSurfaceVariant),
             ),
           ],
@@ -259,12 +155,14 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
               role = 'Guru';
             }
           }
-          
+
           final subjects = account['subjects'] as List? ?? [];
           final classrooms = account['classrooms'] as List? ?? [];
-          
+
           return Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -303,63 +201,100 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: RekapTheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           role,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  if (account['role'] == 'guru' && (subjects.isNotEmpty || classrooms.isNotEmpty)) ...[
+                  if (account['role'] == 'guru' &&
+                      (subjects.isNotEmpty || classrooms.isNotEmpty)) ...[
                     const SizedBox(height: 12),
                     if (subjects.isNotEmpty) ...[
                       const Text(
                         'Mapel:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: subjects.map((s) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: RekapTheme.primaryFixed.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            s['name'],
-                            style: const TextStyle(fontSize: 11, color: RekapTheme.primary),
-                          ),
-                        )).toList(),
+                        children: subjects
+                            .map(
+                              (s) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: RekapTheme.primaryFixed.withOpacity(
+                                    0.3,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  s['name'],
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: RekapTheme.primary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                       const SizedBox(height: 8),
                     ],
                     if (classrooms.isNotEmpty) ...[
                       const Text(
                         'Kelas:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: classrooms.map((c) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: RekapTheme.tertiaryFixed.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            c['name'],
-                            style: const TextStyle(fontSize: 11, color: RekapTheme.tertiary),
-                          ),
-                        )).toList(),
+                        children: classrooms
+                            .map(
+                              (c) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: RekapTheme.tertiaryFixed.withOpacity(
+                                    0.3,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  c['name'],
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: RekapTheme.tertiary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ],
                   ],
@@ -382,10 +317,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                           child: const Text('Konfirmasi'),
                         )
                       else if (account['role'] == 'guru')
-                        FilledButton.tonal(
-                          onPressed: () => _updateGuruAssignments(account),
-                          child: const Text('Atur Penugasan'),
-                        ),
+                        const SizedBox.shrink(),
                     ],
                   ),
                 ],

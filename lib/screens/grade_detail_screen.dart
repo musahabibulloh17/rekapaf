@@ -6,14 +6,57 @@ import '../theme/rekap_theme.dart';
 
 /// Detail Nilai Real-time – Grade Detail Screen (User/Parent view)
 /// Matches: detail-nilai-realtime-user.html
-class GradeDetailScreen extends StatelessWidget {
+class GradeDetailScreen extends StatefulWidget {
   const GradeDetailScreen({super.key, this.onRefresh});
   final VoidCallback? onRefresh;
 
   @override
+  State<GradeDetailScreen> createState() => _GradeDetailScreenState();
+}
+
+class _GradeDetailScreenState extends State<GradeDetailScreen> {
+  Student? _student;
+  bool _isLoading = false;
+  int? _selectedGrade;
+  String? _selectedSemester;
+
+  @override
+  void initState() {
+    super.initState();
+    _student = RekapRepository.instance.childStudent;
+    if (_student != null) {
+      _selectedGrade = _student!.gradeLevel;
+      _selectedSemester = _student!.semester;
+    }
+  }
+
+  Future<void> _updateFilter(int grade, String semester) async {
+    final original = RekapRepository.instance.childStudent;
+    if (original == null) return;
+
+    setState(() {
+      _selectedGrade = grade;
+      _selectedSemester = semester;
+      _isLoading = true;
+    });
+
+    final updated = await RekapRepository.instance.getStudentById(
+      original.id,
+      gradeLevel: grade,
+      semester: semester,
+    );
+
+    if (mounted) {
+      setState(() {
+        if (updated != null) _student = updated;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final repo = RekapRepository.instance;
-    final student = repo.childStudent;
+    final student = _student;
 
     if (student == null) {
       return Scaffold(
@@ -34,22 +77,42 @@ class GradeDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: RekapTheme.surface,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Stack(
           children: [
-            _HeroSection(student: student),
-            const SizedBox(height: 20),
-            _TabSelector(),
-            const SizedBox(height: 20),
-            _TrendChart(),
-            const SizedBox(height: 20),
-            _SubjectListCard(subjects: student.subjects),
-            const SizedBox(height: 20),
-            _AttendanceCard(attendance: student.attendance),
-            const SizedBox(height: 20),
-            _RecommendationCard(student: student),
-            const SizedBox(height: 20),
-            _DisciplineNoteCard(student: student),
+            RefreshIndicator(
+              onRefresh: () async {
+                if (widget.onRefresh != null) widget.onRefresh!();
+                await _updateFilter(_selectedGrade!, _selectedSemester!);
+              },
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  _HeroSection(student: student),
+                  const SizedBox(height: 20),
+                  _PeriodFilter(
+                    currentGrade: _selectedGrade!,
+                    currentSemester: _selectedSemester!,
+                    student: RekapRepository.instance.childStudent!, // Use original for history options
+                    onChanged: _updateFilter,
+                  ),
+                  const SizedBox(height: 20),
+                  _TrendChart(),
+                  const SizedBox(height: 20),
+                  _SubjectListCard(subjects: student.subjects),
+                  const SizedBox(height: 20),
+                  _AttendanceCard(attendance: student.attendance),
+                  const SizedBox(height: 20),
+                  _RecommendationCard(student: student),
+                  const SizedBox(height: 20),
+                  _DisciplineNoteCard(student: student),
+                ],
+              ),
+            ),
+            if (_isLoading)
+              Container(
+                color: Colors.black.withValues(alpha: 0.1),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
           ],
         ),
       ),
@@ -177,54 +240,75 @@ class _HeroSection extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-class _TabSelector extends StatelessWidget {
+class _PeriodFilter extends StatelessWidget {
+  const _PeriodFilter({
+    required this.currentGrade,
+    required this.currentSemester,
+    required this.student,
+    required this.onChanged,
+  });
+
+  final int currentGrade;
+  final String currentSemester;
+  final Student student;
+  final void Function(int grade, String semester) onChanged;
+
   @override
   Widget build(BuildContext context) {
+    // Generate options from current state and histories
+    final List<Map<String, dynamic>> options = [
+      {
+        'grade': student.gradeLevel,
+        'semester': student.semester,
+        'label': 'Kelas ${student.gradeLevel} - ${student.semester} (Aktif)',
+      },
+      ...student.histories.map((h) => {
+            'grade': h.gradeLevel,
+            'semester': h.semester,
+            'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
+          }),
+    ];
+
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: RekapTheme.surfaceContainer,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-            child: const Text(
-              'Semester Ini',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF2E7D32),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              'Riwayat',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: RekapTheme.outline,
-              ),
-            ),
+        border: Border.all(color: RekapTheme.surfaceContainer),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: options.indexWhere((o) => o['grade'] == currentGrade && o['semester'] == currentSemester),
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: RekapTheme.primary),
+          items: List.generate(options.length, (index) {
+            final opt = options[index];
+            return DropdownMenuItem<int>(
+              value: index,
+              child: Text(
+                opt['label'],
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: RekapTheme.onSurface,
+                ),
+              ),
+            );
+          }),
+          onChanged: (index) {
+            if (index != null) {
+              onChanged(options[index]['grade'], options[index]['semester']);
+            }
+          },
+        ),
       ),
     );
   }
@@ -479,14 +563,14 @@ class _SubjectRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    subject.score.toInt().toString(),
+                    subject.score?.toInt().toString() ?? '-',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: subject.isPassing
-                          ? RekapTheme.primary
-                          : RekapTheme.secondary,
+                      color: subject.score == null 
+                          ? RekapTheme.outline 
+                          : (subject.isPassing ? RekapTheme.primary : RekapTheme.secondary),
                     ),
                   ),
                   Container(
@@ -495,20 +579,20 @@ class _SubjectRow extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: subject.isPassing
-                          ? const Color(0xFFDCFCE7)
-                          : RekapTheme.secondaryContainer,
+                      color: subject.score == null 
+                          ? RekapTheme.surfaceContainer
+                          : (subject.isPassing ? const Color(0xFFDCFCE7) : RekapTheme.secondaryContainer),
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: Text(
-                      subject.status,
+                      subject.score == null ? 'BELUM ADA' : subject.status,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
-                        color: subject.isPassing
-                            ? const Color(0xFF15803D)
-                            : RekapTheme.secondary,
+                        color: subject.score == null 
+                            ? RekapTheme.outline 
+                            : (subject.isPassing ? const Color(0xFF15803D) : RekapTheme.secondary),
                       ),
                     ),
                   ),
@@ -737,9 +821,11 @@ class _RecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Find the subject that needs improvement
-    final weakSubject = student.subjects.reduce(
-      (a, b) => a.score < b.score ? a : b,
+    final subjectsWithScores = student.subjects.where((s) => s.score != null).toList();
+    if (subjectsWithScores.isEmpty) return const SizedBox.shrink();
+
+    final weakSubject = subjectsWithScores.reduce(
+      (a, b) => (a.score ?? 101) < (b.score ?? 101) ? a : b,
     );
 
     return Container(

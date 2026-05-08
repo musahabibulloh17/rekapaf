@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Gunakan 10.0.2.2 untuk Android Emulator, atau IP lokal untuk device fisik.
   // Ganti dengan IP komputer kamu di jaringan lokal.
-  static const String baseUrl = 'https://a1f1-2001-448a-5130-bac1-700d-50bd-ce17-ef14.ngrok-free.app/api';
+  static const String baseUrl = 'https://ca32-2001-448a-5130-bac1-700d-50bd-ce17-ef14.ngrok-free.app/api';
 
   static String? _token;
 

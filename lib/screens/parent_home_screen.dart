@@ -455,46 +455,49 @@ class _NewsCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  child: Image.network(
-                    news.fullImageUrl,
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    alignment: Alignment(news.focalX, news.focalY),
-                    errorBuilder: (ctx, err, stack) => Container(
-                      height: 140,
+                  child: AspectRatio(
+                    aspectRatio: 2.0,
+                    child: Image.network(
+                      news.fullImageUrl,
                       width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: RekapTheme.surfaceContainerLow,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(20),
+                      alignment: Alignment(news.focalX, news.focalY),
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) => Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: RekapTheme.surfaceContainerLow,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
                         ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          _iconForCategory(),
-                          size: 48,
-                          color: RekapTheme.outline,
+                        child: Center(
+                          child: Icon(
+                            _iconForCategory(),
+                            size: 48,
+                            color: RekapTheme.outline,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 )
               else
-                Container(
-                  height: 140,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: RekapTheme.surfaceContainerLow,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
+                AspectRatio(
+                  aspectRatio: 2.0,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: RekapTheme.surfaceContainerLow,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      _iconForCategory(),
-                      size: 48,
-                      color: RekapTheme.outline,
+                    child: Center(
+                      child: Icon(
+                        _iconForCategory(),
+                        size: 48,
+                        color: RekapTheme.outline,
+                      ),
                     ),
                   ),
                 ),
@@ -512,8 +515,6 @@ class _NewsCard extends StatelessWidget {
                   ),
                   child: Text(
                     news.category.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 10,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'data/rekap_repository.dart';
 
@@ -14,11 +13,12 @@ import 'screens/student_list_screen.dart';
 import 'services/auth_service.dart';
 import 'theme/rekap_theme.dart';
 
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       systemNavigationBarColor: Colors.white,

@@ -5,9 +5,13 @@ class Student {
     required this.name,
     required this.nisn,
     required this.className,
+    required this.gradeLevel,
+    required this.semester,
+    required this.academicYear,
     required this.subjects,
     required this.disciplinePoints,
     required this.attendance,
+    this.histories = const [],
     this.photoUrl,
   });
 
@@ -15,16 +19,22 @@ class Student {
   final String name;
   final String nisn;
   final String className;
+  final int gradeLevel;
+  final String semester;
+  final String academicYear;
   final List<SubjectScore> subjects;
   final DisciplinePoints disciplinePoints;
   final AttendanceData attendance;
+  final List<StudentHistory> histories;
   final String? photoUrl;
 
+  String get currentPeriod => 'Kelas $gradeLevel Semester $semester';
+
   double get averageScore {
-    if (subjects.isEmpty) return 0;
-    final total =
-        subjects.map((s) => s.score).reduce((a, b) => a + b);
-    return total / subjects.length;
+    final scores = subjects.map((s) => s.score).whereType<double>().toList();
+    if (scores.isEmpty) return 0;
+    final total = scores.reduce((a, b) => a + b);
+    return total / scores.length;
   }
 
   String get academicStatus {
@@ -41,9 +51,13 @@ class Student {
     String? name,
     String? nisn,
     String? className,
+    int? gradeLevel,
+    String? semester,
+    String? academicYear,
     List<SubjectScore>? subjects,
     DisciplinePoints? disciplinePoints,
     AttendanceData? attendance,
+    List<StudentHistory>? histories,
     String? photoUrl,
   }) {
     return Student(
@@ -51,12 +65,34 @@ class Student {
       name: name ?? this.name,
       nisn: nisn ?? this.nisn,
       className: className ?? this.className,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      semester: semester ?? this.semester,
+      academicYear: academicYear ?? this.academicYear,
       subjects: subjects ?? this.subjects,
       disciplinePoints: disciplinePoints ?? this.disciplinePoints,
       attendance: attendance ?? this.attendance,
+      histories: histories ?? this.histories,
       photoUrl: photoUrl ?? this.photoUrl,
     );
   }
+}
+
+class StudentHistory {
+  const StudentHistory({
+    required this.id,
+    required this.className,
+    required this.gradeLevel,
+    required this.semester,
+    required this.academicYear,
+  });
+
+  final int id;
+  final String className;
+  final int gradeLevel;
+  final String semester;
+  final String academicYear;
+
+  String get period => 'Kelas $gradeLevel Semester $semester';
 }
 
 class ScoreDetail {
@@ -80,6 +116,7 @@ class SubjectScore {
   const SubjectScore({
     this.id = 0,
     required this.subjectId,
+    required this.gradeLevel,
     required this.name,
     required this.score,
     required this.teacher,
@@ -89,22 +126,25 @@ class SubjectScore {
 
   final int id;
   final int subjectId;
+  final int gradeLevel;
   final String name;
-  final double score;
+  final double? score;
   final String teacher;
   final String icon; // Material icon name
   final List<ScoreDetail> details;
 
-  bool get isPassing => score >= 75;
+  bool get isPassing => (score ?? 0) >= 75;
   String get status => isPassing ? 'LULUS' : 'PERBAIKAN';
 
   SubjectScore copyWith({
     double? score,
+    int? gradeLevel,
     List<ScoreDetail>? details,
   }) {
     return SubjectScore(
       id: id,
       subjectId: subjectId,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
       name: name,
       score: score ?? this.score,
       teacher: teacher,
@@ -178,3 +218,4 @@ class AttendanceData {
     return 'Kurang';
   }
 }
+
