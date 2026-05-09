@@ -4,6 +4,8 @@ import '../data/rekap_repository.dart';
 import '../models/student.dart';
 import '../theme/rekap_theme.dart';
 import '../widgets/loading_indicator.dart';
+import '../services/api_service.dart';
+import 'package:open_filex/open_filex.dart';
 
 /// Detail Nilai Real-time – Grade Detail Screen (User/Parent view)
 /// Matches: detail-nilai-realtime-user.html
@@ -56,6 +58,43 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
     }
   }
 
+  Future<void> _exportPDF() async {
+    if (_student == null) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      final student = _student!;
+      final fileName = 'Rapot_${student.name}_Kelas_${_selectedGrade}_${_selectedSemester}.pdf';
+      
+      final path = await ApiService.download(
+        '/scores/export/report-pdf/${student.id}?grade_level=${_selectedGrade}&semester=${_selectedSemester}&academic_year=${student.academicYear}',
+        fileName,
+      );
+
+      if (path != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Rapot berhasil diunduh: $fileName'),
+              action: SnackBarAction(
+                label: 'Buka',
+                onPressed: () => OpenFilex.open(path),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunduh rapot: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final student = _student;
@@ -98,9 +137,12 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
                     onChanged: _updateFilter,
                   ),
                   const SizedBox(height: 20),
-                  _TrendChart(),
+                  _TrendChart(student: student),
                   const SizedBox(height: 20),
-                  _SubjectListCard(subjects: student.subjects),
+                  _SubjectListCard(
+                    subjects: student.subjects,
+                    onExportPDF: _exportPDF,
+                  ),
                   const SizedBox(height: 20),
                   _AttendanceCard(attendance: student.attendance),
                   const SizedBox(height: 20),
@@ -257,7 +299,7 @@ class _PeriodFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate options from current state and histories
+    // Generate options from current state and histories (filter duplicates)
     final List<Map<String, dynamic>> options = [
       {
         'grade': student.gradeLevel,
@@ -265,12 +307,14 @@ class _PeriodFilter extends StatelessWidget {
         'academicYear': student.academicYear,
         'label': 'Kelas ${student.gradeLevel} - ${student.semester} (Aktif)',
       },
-      ...student.histories.map((h) => {
-            'grade': h.gradeLevel,
-            'semester': h.semester,
-            'academicYear': h.academicYear,
-            'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
-          }),
+      ...student.histories
+          .where((h) => !(h.gradeLevel == student.gradeLevel && h.semester == student.semester))
+          .map((h) => {
+                'grade': h.gradeLevel,
+                'semester': h.semester,
+                'academicYear': h.academicYear,
+                'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
+              }),
     ];
 
     return Container(
@@ -324,10 +368,41 @@ class _PeriodFilter extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _TrendChart extends StatelessWidget {
+  const _TrendChart({required this.student});
+  final Student student;
+
   @override
   Widget build(BuildContext context) {
-    final months = ['JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-    final heights = [0.50, 0.63, 0.56, 0.75, 0.81, 0.69];
+    final isGenap = student.semester.toLowerCase() == 'genap';
+    final monthLabels = isGenap
+        ? ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN']
+        : ['JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+    final monthIndices = isGenap ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
+
+    final Map<int, List<double>> groupedScores = {};
+    for (var m in monthIndices) {
+      groupedScores[m] = [];
+    }
+
+    for (var subject in student.subjects) {
+      for (var detail in subject.details) {
+        if (detail.date != null) {
+          final m = detail.date!.month;
+          if (groupedScores.containsKey(m)) {
+            groupedScores[m]!.add(detail.score);
+          }
+        }
+      }
+    }
+
+    final List<double> averages = List.generate(6, (i) {
+      final scores = groupedScores[monthIndices[i]]!;
+      if (scores.isEmpty) return 0.0;
+      return scores.reduce((a, b) => a + b) / scores.length;
+    });
+
+    final maxAvg = averages.reduce((a, b) => a > b ? a : b);
+    final displayMax = maxAvg > 0 ? maxAvg : 100.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -364,7 +439,7 @@ class _TrendChart extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Data progres akademik 6 bulan terakhir',
+                      'Rata-rata nilai per bulan semester ini',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
@@ -374,7 +449,7 @@ class _TrendChart extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.more_vert, color: RekapTheme.onSurfaceVariant),
+              const Icon(Icons.show_chart, color: RekapTheme.primary),
             ],
           ),
           const SizedBox(height: 24),
@@ -382,36 +457,49 @@ class _TrendChart extends StatelessWidget {
             height: 200,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(months.length, (i) {
-                final isHighest = i == 4;
+              children: List.generate(6, (i) {
+                final avg = averages[i];
+                final heightFactor = avg / displayMax;
+                final isHighest = avg > 0 && avg == maxAvg;
+
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (avg > 0)
+                          Text(
+                            avg.toInt().toString(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isHighest ? RekapTheme.primary : RekapTheme.outline,
+                            ),
+                          ),
+                        const SizedBox(height: 4),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 600),
                           curve: Curves.easeOutCubic,
-                          height: heights[i] * 160,
+                          height: (avg > 0 ? (heightFactor * 140) + 10 : 2.0),
                           decoration: BoxDecoration(
-                            color: isHighest
-                                ? RekapTheme.primary
-                                : RekapTheme.secondaryContainer,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(6),
-                            ),
+                            color: avg == 0
+                                ? RekapTheme.surfaceContainer
+                                : (isHighest
+                                    ? RekapTheme.primary
+                                    : RekapTheme.primary.withValues(alpha: 0.3)),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          months[i],
-                          style: TextStyle(
+                          monthLabels[i],
+                          style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
-                            color: const Color(0xFF94A3B8),
+                            color: Color(0xFF94A3B8),
                           ),
                         ),
                       ],
@@ -429,8 +517,9 @@ class _TrendChart extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _SubjectListCard extends StatelessWidget {
-  const _SubjectListCard({required this.subjects});
+  const _SubjectListCard({required this.subjects, required this.onExportPDF});
   final List<SubjectScore> subjects;
+  final VoidCallback onExportPDF;
 
   IconData _iconForSubject(String iconName) {
     switch (iconName) {
@@ -485,7 +574,7 @@ class _SubjectListCard extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: onExportPDF,
                   child: const Text(
                     'Unduh PDF',
                     style: TextStyle(
@@ -952,9 +1041,9 @@ class _DisciplineNoteCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.verified_user,
-                color: const Color(0xFF15803D),
+                color: Color(0xFF15803D),
                 size: 22,
               ),
               const SizedBox(width: 8),
@@ -984,40 +1073,42 @@ class _DisciplineNoteCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _formatDate(lastRecord.date),
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: RekapTheme.onSurfaceVariant,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _formatDate(lastRecord.date),
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        color: RekapTheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    lastRecord.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: RekapTheme.onSurface,
+                    const SizedBox(height: 4),
+                    Text(
+                      lastRecord.title,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: RekapTheme.onSurface,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${lastRecord.isPositive ? '+' : ''}${lastRecord.points} POIN ${lastRecord.category.toUpperCase()}',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: lastRecord.isPositive
-                          ? const Color(0xFF15803D)
-                          : RekapTheme.error,
+                    const SizedBox(height: 4),
+                    Text(
+                      '${lastRecord.isPositive ? '+' : ''}${lastRecord.points} POIN ${lastRecord.category.toUpperCase()}',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: lastRecord.isPositive
+                            ? const Color(0xFF15803D)
+                            : RekapTheme.error,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

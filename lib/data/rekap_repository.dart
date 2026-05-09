@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../models/student.dart';
 import '../models/classroom.dart';
+import '../models/subject.dart';
 import '../models/school_news.dart';
 import '../models/user_profile.dart';
 import '../services/api_service.dart';
@@ -18,12 +19,14 @@ class RekapRepository {
   List<Student> _students = [];
   List<SchoolNews> _schoolNews = [];
   List<Classroom> _classrooms = [];
+  List<Subject> _subjects = [];
   Map<int, List<String>> _subjectTeachers = {};
   bool _isLoading = false;
 
   List<Student> get students => List.unmodifiable(_students);
   List<SchoolNews> get schoolNews => List.unmodifiable(_schoolNews);
   List<Classroom> get classrooms => List.unmodifiable(_classrooms);
+  List<Subject> get subjects => List.unmodifiable(_subjects);
   bool get isLoading => _isLoading;
 
   // ── Current User (delegates to AuthService) ───────────────────────────
@@ -36,7 +39,12 @@ class RekapRepository {
   Future<void> loadAll() async {
     _isLoading = true;
     await loadTeacherAssignments();
-    await Future.wait([loadStudents(), loadNews(), loadClassrooms()]);
+    await Future.wait([
+      loadStudents(),
+      loadNews(),
+      loadClassrooms(),
+      loadSubjects(),
+    ]);
     _isLoading = false;
   }
 
@@ -50,6 +58,16 @@ class RekapRepository {
       if (response['success'] == true) {
         final list = response['data'] as List;
         _classrooms = list.map((json) => Classroom.fromJson(json)).toList();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> loadSubjects() async {
+    try {
+      final response = await ApiService.get('/subjects');
+      if (response['success'] == true) {
+        final list = response['data'] as List;
+        _subjects = list.map((json) => Subject.fromJson(json)).toList();
       }
     } catch (_) {}
   }
@@ -71,6 +89,33 @@ class RekapRepository {
       }
     } catch (e) {
       // Keep cached data if API fails
+    }
+  }
+
+  Future<void> updateScoreDetail({
+    required int detailId,
+    required String name,
+    required String type,
+    required double score,
+    DateTime? date,
+  }) async {
+    try {
+      await ApiService.put('/scores/details/$detailId', {
+        'name': name,
+        'type': type,
+        'score': score,
+        'date': date?.toIso8601String().split('T')[0],
+      });
+    } catch (e) {
+      throw 'Gagal memperbarui nilai: $e';
+    }
+  }
+
+  Future<void> deleteScoreDetail(int detailId) async {
+    try {
+      await ApiService.delete('/scores/details/$detailId');
+    } catch (e) {
+      throw 'Gagal menghapus nilai: $e';
     }
   }
 
@@ -316,6 +361,47 @@ class RekapRepository {
     }
 
     await ApiService.post('/scores/details', body);
+    await loadStudents();
+  }
+
+  Future<void> importAllSubjectsScores({
+    required int studentId,
+    required File file,
+    required int gradeLevel,
+    required String semester,
+    required String academicYear,
+  }) async {
+    await ApiService.postMultipart(
+      '/scores/import/all/$studentId',
+      {
+        'grade_level': gradeLevel.toString(),
+        'semester': semester,
+        'academic_year': academicYear,
+      },
+      file,
+      'file',
+    );
+    await loadStudents();
+  }
+
+  Future<void> importSubjectDetails({
+    required int studentId,
+    required int subjectId,
+    required File file,
+    required int gradeLevel,
+    required String semester,
+    required String academicYear,
+  }) async {
+    await ApiService.postMultipart(
+      '/scores/import/subject/$studentId/$subjectId',
+      {
+        'grade_level': gradeLevel.toString(),
+        'semester': semester,
+        'academic_year': academicYear,
+      },
+      file,
+      'file',
+    );
     await loadStudents();
   }
 

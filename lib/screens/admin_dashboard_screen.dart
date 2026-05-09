@@ -339,7 +339,7 @@ class _QuickAccessGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.6,
+      childAspectRatio: 1.5,
       children: [
         _QuickAccessItem(
           icon: Icons.gavel,

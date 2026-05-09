@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:open_filex/open_filex.dart';
+import 'dart:io';
 
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
 import '../models/classroom.dart';
 import '../theme/rekap_theme.dart';
 import '../widgets/loading_indicator.dart';
+import '../services/api_service.dart';
 import 'input_discipline_screen.dart';
 import 'input_grades_screen.dart';
 
@@ -607,13 +611,28 @@ class _StudentDetailPageState extends State<_StudentDetailPage> {
   // Get all available periods (rely on API sorted histories)
   List<Map<String, dynamic>> get _allPeriods {
     final student = _student ?? widget.student;
-    return student.histories.map((h) => {
-      'gradeLevel': h.gradeLevel,
-      'semester': h.semester,
-      'academicYear': h.academicYear,
-      'isCurrent': h.gradeLevel == widget.student.gradeLevel && 
-                   h.semester == widget.student.semester,
-    }).toList();
+    // Current period
+    final periods = <Map<String, dynamic>>[
+      {
+        'gradeLevel': student.gradeLevel,
+        'semester': student.semester,
+        'academicYear': student.academicYear,
+        'isCurrent': true,
+      }
+    ];
+
+    // Add histories that are not the current period
+    for (var h in student.histories) {
+      if (!(h.gradeLevel == student.gradeLevel && h.semester == student.semester)) {
+        periods.add({
+          'gradeLevel': h.gradeLevel,
+          'semester': h.semester,
+          'academicYear': h.academicYear,
+          'isCurrent': false,
+        });
+      }
+    }
+    return periods;
   }
 
   @override
@@ -662,6 +681,111 @@ class _StudentDetailPageState extends State<_StudentDetailPage> {
     if (mounted) {
       // Re-fetch to get latest points
       _updateFilter(_selectedGrade!, _selectedSemester!, _student!.academicYear);
+    }
+  }
+
+  Future<void> _downloadAllTemplate() async {
+    setState(() => _isLoading = true);
+    try {
+      final student = _student ?? widget.student;
+      final fileName = 'Template_Semua_Nilai_${student.name}.xlsx';
+      final path = await ApiService.download(
+        '/scores/template/all/${student.id}',
+        fileName,
+      );
+
+      if (path != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Template berhasil diunduh: $fileName'),
+              action: SnackBarAction(
+                label: 'Buka',
+                onPressed: () => OpenFilex.open(path),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunduh template: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _importAllExcel() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls', 'csv'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final student = _student ?? widget.student;
+      await RekapRepository.instance.importAllSubjectsScores(
+        studentId: student.id,
+        file: File(result.files.single.path!),
+        gradeLevel: _selectedGrade ?? student.gradeLevel,
+        semester: _selectedSemester ?? student.semester,
+        academicYear: student.academicYear,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Semua nilai berhasil diimport!')),
+        );
+        _updateFilter(_selectedGrade!, _selectedSemester!, student.academicYear, force: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengimport data: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _exportReportPDF() async {
+    setState(() => _isLoading = true);
+    try {
+      final student = _student ?? widget.student;
+      final fileName = 'Rapot_${student.name}_Kelas_${_selectedGrade}_${_selectedSemester}.pdf';
+      
+      final path = await ApiService.download(
+        '/scores/export/report-pdf/${student.id}?grade_level=${_selectedGrade}&semester=${_selectedSemester}&academic_year=${student.academicYear}',
+        fileName,
+      );
+
+      if (path != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Rapot PDF berhasil diekspor: $fileName'),
+              action: SnackBarAction(
+                label: 'Buka',
+                onPressed: () => OpenFilex.open(path),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengekspor rapot PDF: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -799,6 +923,66 @@ class _StudentDetailPageState extends State<_StudentDetailPage> {
                   periods: _allPeriods,
                 ),
                 const SizedBox(height: 24),
+
+                // Excel/PDF Tools (Collapsible)
+                if (RekapRepository.instance.currentUser.isAdmin || RekapRepository.instance.currentUser.isGuru) ...[
+                  Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Alat Manajemen Nilai',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: RekapTheme.onSurface,
+                        ),
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: RekapTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.auto_fix_high_rounded, color: RekapTheme.primary, size: 20),
+                      ),
+                      children: [
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _ExcelToolButton(
+                                label: 'Download Template',
+                                icon: Icons.download_rounded,
+                                color: RekapTheme.primary,
+                                onTap: _downloadAllTemplate,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _ExcelToolButton(
+                                label: 'Import Excel',
+                                icon: Icons.upload_file_rounded,
+                                color: RekapTheme.secondary,
+                                onTap: _importAllExcel,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _ExcelToolButton(
+                          label: 'Export Rapot PDF (Final)',
+                          icon: Icons.picture_as_pdf_rounded,
+                          color: Colors.red.shade700,
+                          onTap: _exportReportPDF,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
       
                 // Subjects
                 const Text(
@@ -812,7 +996,20 @@ class _StudentDetailPageState extends State<_StudentDetailPage> {
                 ),
                 const SizedBox(height: 12),
                 if (_student != null)
-                  ..._student!.subjects.map(
+                  ..._student!.subjects.where((subject) {
+                    final user = RekapRepository.instance.currentUser;
+                    // Superadmin can see everything
+                    if (user.isSuperAdmin) return true;
+                    
+                    // Teachers only see their own subjects
+                    // Wali Kelas might see all subjects of their own students, 
+                    // but the user specifically mentioned "guru" access bug.
+                    // For now, restrict by teacher name matching.
+                    final teacherName = user.name.toLowerCase().trim();
+                    final subjectTeacher = subject.teacher.toLowerCase();
+                    
+                    return subjectTeacher.contains(teacherName);
+                  }).map(
                     (subject) => Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: _SubjectDetailTile(
@@ -871,22 +1068,28 @@ class _DetailStatCard extends StatelessWidget {
           children: [
             Icon(icon, color: RekapTheme.primary, size: 22),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: RekapTheme.onSurface,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: RekapTheme.onSurface,
+                ),
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 11,
-                color: RekapTheme.onSurfaceVariant,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  color: RekapTheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -1116,6 +1319,56 @@ class _SubjectDetailTileState extends State<_SubjectDetailTile> {
             const SizedBox(width: 8),
             const Icon(Icons.edit, size: 16, color: RekapTheme.outlineVariant),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExcelToolButton extends StatelessWidget {
+  const _ExcelToolButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

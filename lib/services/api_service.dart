@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart' as dio_pkg;
 
 /// Central API service for all HTTP calls to the Laravel backend.
 class ApiService {
@@ -90,6 +92,49 @@ class ApiService {
       headers: _headers,
     );
     return _handleResponse(response);
+  }
+
+  static Future<String?> download(String endpoint, String fileName) async {
+    try {
+      final dio = dio_pkg.Dio();
+      
+      // Tentukan folder penyimpanan
+      String? savePath;
+      if (Platform.isAndroid) {
+        // Coba ke folder Download publik di Android
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (await downloadDir.exists()) {
+          savePath = '${downloadDir.path}/$fileName';
+        } else {
+          final externalDir = await getExternalStorageDirectory();
+          savePath = '${externalDir?.path}/$fileName';
+        }
+      } else {
+        // Folder dokumen aplikasi untuk platform lain
+        final appDir = await getApplicationDocumentsDirectory();
+        savePath = '${appDir.path}/$fileName';
+      }
+
+      if (savePath == null) return null;
+
+      final response = await dio.download(
+        '$_currentBaseUrl$endpoint',
+        savePath,
+        options: dio_pkg.Options(
+          headers: {
+            if (_token != null) 'Authorization': 'Bearer $_token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return savePath;
+      }
+    } catch (e) {
+      print('Download error: $e');
+      rethrow;
+    }
+    return null;
   }
 
   static Future<Map<String, dynamic>> postMultipart(

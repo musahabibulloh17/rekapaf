@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:open_filex/open_filex.dart';
+import 'dart:io';
 
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
 import '../services/auth_service.dart';
 import '../theme/rekap_theme.dart';
 import '../widgets/loading_indicator.dart';
+import '../services/api_service.dart';
 
 class InputGradesScreen extends StatefulWidget {
   const InputGradesScreen({
@@ -30,6 +34,17 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
   bool _isLoading = false;
   bool _isLoadingDetails = false;
   bool get _isSuperAdmin => AuthService.instance.currentUser?.isSuperAdmin ?? false;
+  bool get _isAdminOrGuru => AuthService.instance.currentUser?.isAdmin == true || AuthService.instance.currentUser?.isGuru == true;
+  
+  bool get _hasEditAccess {
+    final user = AuthService.instance.currentUser;
+    if (user == null) return false;
+    if (user.isSuperAdmin) return true;
+    
+    final teacherName = user.name.toLowerCase().trim();
+    final subjectTeacher = widget.subjectScore.teacher.toLowerCase();
+    return subjectTeacher.contains(teacherName);
+  }
 
   // Period selection for superadmin
   int? _selectedGrade;
@@ -48,7 +63,7 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
 
   void _initializePeriodOptions() {
     final student = widget.student;
-    if (_isSuperAdmin && student != null) {
+    if (_isAdminOrGuru && student != null) {
       // Build options from current period + all histories
       _periodOptions = [
         {
@@ -183,49 +198,51 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: const Text('Tambah Nilai Baru'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedType,
-                    items: const [
-                      DropdownMenuItem(value: 'tugas', child: Text('Tugas')),
-                      DropdownMenuItem(value: 'uts', child: Text('UTS')),
-                      DropdownMenuItem(value: 'uas', child: Text('UAS')),
-                      DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setDialogState(() => selectedType = val);
-                        if (nameController.text.isEmpty) {
-                          if (val == 'uts') nameController.text = 'UTS';
-                          if (val == 'uas') nameController.text = 'UAS';
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedType,
+                      items: const [
+                        DropdownMenuItem(value: 'tugas', child: Text('Tugas')),
+                        DropdownMenuItem(value: 'uts', child: Text('UTS')),
+                        DropdownMenuItem(value: 'uas', child: Text('UAS')),
+                        DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => selectedType = val);
+                          if (nameController.text.isEmpty) {
+                            if (val == 'uts') nameController.text = 'UTS';
+                            if (val == 'uas') nameController.text = 'UAS';
+                          }
                         }
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Jenis Nilai',
-                      border: OutlineInputBorder(),
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Jenis Nilai',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nama / Keterangan (cth: Tugas 1)',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nama / Keterangan (cth: Tugas 1)',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: scoreController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Nilai (0-100)',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: scoreController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Nilai (0-100)',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -288,6 +305,235 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
     }
   }
 
+  Future<void> _editGrade(ScoreDetail detail) async {
+    final nameController = TextEditingController(text: detail.name);
+    final scoreController = TextEditingController(text: detail.score.toInt().toString());
+    String selectedType = detail.type;
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit Nilai'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: selectedType,
+                      items: const [
+                        DropdownMenuItem(value: 'tugas', child: Text('Tugas')),
+                        DropdownMenuItem(value: 'uts', child: Text('UTS')),
+                        DropdownMenuItem(value: 'uas', child: Text('UAS')),
+                        DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => selectedType = val);
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Jenis Nilai',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nama / Keterangan',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: scoreController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Nilai (0-100)',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, 'delete'),
+                  child: const Text('Hapus', style: TextStyle(color: RekapTheme.error)),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, 'cancel'),
+                  child: const Text('Batal'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, 'save'),
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == 'save') {
+      final name = nameController.text.trim();
+      final scoreStr = scoreController.text.trim();
+      final score = double.tryParse(scoreStr);
+
+      if (name.isEmpty || score == null || score < 0 || score > 100) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data tidak valid')),
+          );
+        }
+        return;
+      }
+
+      setState(() => _isLoading = true);
+      try {
+        await RekapRepository.instance.updateScoreDetail(
+          detailId: detail.id,
+          name: name,
+          type: selectedType,
+          score: score,
+          date: detail.date,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Berhasil memperbarui nilai')),
+          );
+          _reloadDetails();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } else if (result == 'delete') {
+      _confirmDelete(detail);
+    }
+  }
+
+  Future<void> _confirmDelete(ScoreDetail detail) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Nilai?'),
+        content: Text('Apakah Anda yakin ingin menghapus nilai "${detail.name}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true), 
+            child: const Text('Hapus', style: TextStyle(color: RekapTheme.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await RekapRepository.instance.deleteScoreDetail(detail.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Nilai berhasil dihapus')),
+          );
+          _reloadDetails();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _downloadTemplate() async {
+    setState(() => _isLoading = true);
+    try {
+      final student = widget.student!;
+      final subject = widget.subjectScore;
+      final fileName = 'Template_Detail_Nilai_${student.name}_${subject.name}.xlsx';
+      final path = await ApiService.download(
+        '/scores/template/subject/${student.id}/${subject.subjectId}',
+        fileName,
+      );
+
+      if (path != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Template berhasil diunduh: $fileName'),
+              action: SnackBarAction(
+                label: 'Buka',
+                onPressed: () => OpenFilex.open(path),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunduh template: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _importExcel() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls', 'csv'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final student = widget.student!;
+      final subject = widget.subjectScore;
+      await RekapRepository.instance.importSubjectDetails(
+        studentId: student.id,
+        subjectId: subject.subjectId,
+        file: File(result.files.single.path!),
+        gradeLevel: _selectedGrade ?? student.gradeLevel,
+        semester: _selectedSemester ?? student.semester,
+        academicYear: student.academicYear,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Rincian nilai berhasil diimport!')),
+        );
+        _reloadDetails();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengimport data: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Use the current subject score with details for the selected period
@@ -301,8 +547,12 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nilai ${widget.subjectScore.name}'),
-            if (_isSuperAdmin && widget.student != null)
+            Text(
+              'Nilai ${widget.subjectScore.name}',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            if (_isAdminOrGuru && widget.student != null)
               GestureDetector(
                 onTap: _showPeriodSelector,
                 child: Row(
@@ -330,7 +580,7 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
         backgroundColor: Colors.white,
         foregroundColor: RekapTheme.onSurface,
         actions: [
-          if (_isSuperAdmin && widget.student != null)
+          if (_isAdminOrGuru && widget.student != null)
             IconButton(
               icon: const Icon(Icons.calendar_month),
               tooltip: 'Ganti Periode',
@@ -355,19 +605,43 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
                         color: RekapTheme.onSurface,
                       ),
                     ),
-                    FilledButton.icon(
-                      onPressed: _addGrade,
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Tambah'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: RekapTheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    if (_hasEditAccess)
+                      FilledButton.icon(
+                        onPressed: _addGrade,
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('Tambah'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: RekapTheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                if (_isSuperAdmin && widget.student != null) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DetailExcelButton(
+                          label: 'Template Detail',
+                          icon: Icons.download_outlined,
+                          onTap: _downloadTemplate,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _DetailExcelButton(
+                          label: 'Import Detail',
+                          icon: Icons.upload_file_outlined,
+                          onTap: _importExcel,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 const SizedBox(height: 16),
                 if (details.isEmpty)
                   Container(
@@ -389,6 +663,7 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
+                        onTap: _hasEditAccess ? () => _editGrade(d) : null,
                         title: Text(
                           d.name,
                           style: const TextStyle(
@@ -400,27 +675,79 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
                           d.date != null ? DateFormat('d MMM yyyy').format(d.date!) : '-',
                           style: const TextStyle(fontSize: 12),
                         ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: RekapTheme.primaryFixed,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            d.score.toInt().toString(),
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: RekapTheme.primary,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: RekapTheme.primaryFixed,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                d.score.toInt().toString(),
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: RekapTheme.primary,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (_isSuperAdmin) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.chevron_right, size: 20, color: RekapTheme.outline),
+                            ],
+                          ],
                         ),
                       ),
                     );
                   }),
               ],
             ),
+    );
+  }
+}
+
+class _DetailExcelButton extends StatelessWidget {
+  const _DetailExcelButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: RekapTheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: RekapTheme.primary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: RekapTheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
