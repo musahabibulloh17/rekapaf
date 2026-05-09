@@ -41,20 +41,47 @@ class NewsDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (imageUrl.isNotEmpty)
-              AspectRatio(
-                aspectRatio: 2.0,
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  alignment: Alignment(news.focalX, news.focalY),
-                  fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, stack) => Container(
-                    color: RekapTheme.surfaceContainerLow,
-                    child: const Center(
-                      child: Icon(Icons.broken_image, size: 48, color: RekapTheme.outline),
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 2.0,
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      alignment: Alignment(news.focalX, news.focalY),
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) => Container(
+                        color: RekapTheme.surfaceContainerLow,
+                        child: const Center(
+                          child: Icon(Icons.broken_image, size: 48, color: RekapTheme.outline),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    bottom: 12,
+                    right: 12,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => _FullImageViewer(imageUrl: imageUrl),
+                        ),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.fullscreen,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               )
             else
               AspectRatio(
@@ -163,5 +190,42 @@ class NewsDetailScreen extends StatelessWidget {
       case NewsCategory.system:
         return const Color(0xFF707A6C);
     }
+  }
+}
+
+class _FullImageViewer extends StatelessWidget {
+  final String imageUrl;
+  const _FullImageViewer({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 5.0,
+              child: Image.network(
+                imageUrl,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

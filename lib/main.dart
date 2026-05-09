@@ -10,6 +10,7 @@ import 'screens/login_screen.dart';
 import 'screens/parent_home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/student_list_screen.dart';
+import 'screens/news_detail_screen.dart';
 import 'services/auth_service.dart';
 import 'theme/rekap_theme.dart';
 import 'widgets/loading_indicator.dart';
@@ -155,10 +156,201 @@ class AppShellState extends State<AppShell> with SingleTickerProviderStateMixin 
     setState(() => _currentIndex = index);
   }
 
+  bool _hasShownInterstitial = false;
+
   Future<void> _refreshData() async {
     setState(() => _isLoading = true);
     await RekapRepository.instance.loadAll();
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      _showInterstitialIfNeeded();
+    }
+  }
+
+  void _showInterstitialIfNeeded() {
+    if (_hasShownInterstitial) return;
+    
+    final repo = RekapRepository.instance;
+    if (repo.schoolNews.isEmpty) return;
+    
+    // Get the absolute newest announcement
+    final newest = repo.schoolNews.first;
+
+    // Only show if the newest one has an image
+    if (newest.imageUrl != null && newest.imageUrl!.isNotEmpty) {
+      _hasShownInterstitial = true;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showAnnouncementDialog(newest);
+        }
+      });
+    }
+  }
+
+  void _showAnnouncementDialog(latest) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Image Section
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                    child: AspectRatio(
+                      aspectRatio: 1.2,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.network(
+                            latest.fullImageUrl,
+                            fit: BoxFit.cover,
+                            alignment: Alignment(latest.focalX, latest.focalY),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.4),
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.6),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 20,
+                            left: 20,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: RekapTheme.secondary,
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                              child: const Text(
+                                'PENGUMUMAN BARU',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Text Content
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          latest.title,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: RekapTheme.onSurface,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          latest.description,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            color: RekapTheme.onSurfaceVariant,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: FilledButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => NewsDetailScreen(news: latest),
+                                ),
+                              );
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: RekapTheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Lihat Detail',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
