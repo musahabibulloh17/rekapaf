@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 import 'register_screen.dart';
 
 /// Login screen — authenticates against the Laravel API.
@@ -250,14 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     child: _isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? const LoadingIndicator(size: 22)
                         : const Text(
                             'Masuk',
                             style: TextStyle(

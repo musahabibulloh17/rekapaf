@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/school_news.dart';
 import '../data/rekap_repository.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Screen untuk menambah/edit pengumuman sekolah
 class AddAnnouncementScreen extends StatefulWidget {
@@ -293,10 +294,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
                 child: FilledButton(
                   onPressed: _isLoading ? null : _handleSave,
                   child: _isLoading 
-                      ? const SizedBox(
-                          width: 20, height: 20, 
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                        )
+                      ? const LoadingIndicator(size: 20)
                       : const Text('Simpan Pengumuman'),
                 ),
               ),

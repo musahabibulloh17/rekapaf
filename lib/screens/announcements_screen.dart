@@ -5,6 +5,7 @@ import '../models/school_news.dart';
 import '../data/rekap_repository.dart';
 import 'add_announcement_screen.dart';
 import 'news_detail_screen.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Screen untuk menampilkan daftar pengumuman
 class AnnouncementsScreen extends StatefulWidget {
@@ -72,7 +73,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingIndicator()
           : Column(
               children: [
               /// Filter chips

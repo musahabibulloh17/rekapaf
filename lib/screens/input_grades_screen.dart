@@ -3,12 +3,24 @@ import 'package:intl/intl.dart';
 
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
+import '../services/auth_service.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 class InputGradesScreen extends StatefulWidget {
-  const InputGradesScreen({super.key, required this.subjectScore, required this.studentId});
+  const InputGradesScreen({
+    super.key,
+    required this.subjectScore,
+    required this.studentId,
+    this.student,
+    this.initialGrade,
+    this.initialSemester,
+  });
   final SubjectScore subjectScore;
   final int studentId;
+  final Student? student;
+  final int? initialGrade;
+  final String? initialSemester;
 
   @override
   State<InputGradesScreen> createState() => _InputGradesScreenState();
@@ -16,6 +28,148 @@ class InputGradesScreen extends StatefulWidget {
 
 class _InputGradesScreenState extends State<InputGradesScreen> {
   bool _isLoading = false;
+  bool _isLoadingDetails = false;
+  bool get _isSuperAdmin => AuthService.instance.currentUser?.isSuperAdmin ?? false;
+
+  // Period selection for superadmin
+  int? _selectedGrade;
+  String? _selectedSemester;
+  List<Map<String, dynamic>> _periodOptions = [];
+
+  // Current subject score with details for selected period
+  SubjectScore? _currentSubjectScore;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePeriodOptions();
+    _currentSubjectScore = widget.subjectScore;
+  }
+
+  void _initializePeriodOptions() {
+    final student = widget.student;
+    if (_isSuperAdmin && student != null) {
+      // Build options from current period + all histories
+      _periodOptions = [
+        {
+          'gradeLevel': student.gradeLevel,
+          'semester': student.semester,
+          'academicYear': student.academicYear,
+          'label': 'Kelas ${student.gradeLevel} - ${student.semester} (Saat Ini)',
+        },
+        ...student.histories.map((h) => {
+          'gradeLevel': h.gradeLevel,
+          'semester': h.semester,
+          'academicYear': h.academicYear,
+          'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
+        }),
+      ];
+      _selectedGrade = widget.initialGrade ?? student.gradeLevel;
+      _selectedSemester = widget.initialSemester ?? student.semester;
+    } else {
+      // Use the subject's grade level and semester
+      _selectedGrade = widget.subjectScore.gradeLevel;
+      _selectedSemester = widget.initialSemester ?? widget.student?.semester ?? 'Ganjil';
+    }
+  }
+
+  /// Reload subject score details for the current period
+  Future<void> _reloadDetails() async {
+    if (widget.student == null || _selectedGrade == null || _selectedSemester == null) return;
+
+    setState(() => _isLoadingDetails = true);
+
+    // Fetch student data for the selected period using both gradeLevel and semester
+    final updatedStudent = await RekapRepository.instance.getStudentById(
+      widget.studentId,
+      gradeLevel: _selectedGrade!,
+      semester: _selectedSemester!,
+    );
+
+    if (updatedStudent != null && mounted) {
+      // Find the subject score for this subject
+      final subjectScore = updatedStudent.subjects.firstWhere(
+        (s) => s.subjectId == widget.subjectScore.subjectId,
+        orElse: () => widget.subjectScore,
+      );
+
+      setState(() {
+        _currentSubjectScore = subjectScore;
+        _isLoadingDetails = false;
+      });
+    } else {
+      if (mounted) {
+        setState(() => _isLoadingDetails = false);
+      }
+    }
+  }
+
+  void _onPeriodChanged() {
+    // Reload details for the new period
+    _reloadDetails();
+  }
+
+  void _showPeriodSelector() {
+    if (!_isSuperAdmin || widget.student == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Pilih Periode Akademik',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Superadmin dapat input nilai untuk semester sebelumnya',
+              style: TextStyle(
+                fontSize: 12,
+                color: RekapTheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ..._periodOptions.map((opt) {
+              final isSelected = _selectedGrade == opt['gradeLevel'] &&
+                  _selectedSemester == opt['semester'];
+              return ListTile(
+                leading: Icon(
+                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: isSelected ? RekapTheme.primary : RekapTheme.outline,
+                ),
+                title: Text(
+                  opt['label'],
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? RekapTheme.primary : null,
+                  ),
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedGrade = opt['gradeLevel'];
+                    _selectedSemester = opt['semester'];
+                  });
+                  Navigator.pop(ctx);
+                  _onPeriodChanged();
+                },
+              );
+            }),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _addGrade() async {
     final nameController = TextEditingController();
@@ -112,12 +266,15 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
           type: selectedType,
           score: score,
           date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          gradeLevel: _selectedGrade,
+          semester: _selectedSemester,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Berhasil menambahkan nilai')),
           );
-          Navigator.pop(context); // Go back to refresh student list
+          // Reload details after adding
+          _reloadDetails();
         }
       } catch (e) {
         if (mounted) {
@@ -133,21 +290,56 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // In a real app we'd fetch the latest student state using a Stream or Provider.
-    // For simplicity, we use the passed in subjectScore which contains details.
-    // When a detail is added, we pop to previous screen to trigger reload.
-    
-    final details = widget.subjectScore.details;
+    // Use the current subject score with details for the selected period
+    final subjectScore = _currentSubjectScore ?? widget.subjectScore;
+    final details = subjectScore.details;
+    final currentPeriodLabel = 'Kelas ${_selectedGrade ?? widget.subjectScore.gradeLevel} - ${_selectedSemester ?? 'Ganjil'}';
 
     return Scaffold(
       backgroundColor: RekapTheme.surface,
       appBar: AppBar(
-        title: Text('Nilai ${widget.subjectScore.name}'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Nilai ${widget.subjectScore.name}'),
+            if (_isSuperAdmin && widget.student != null)
+              GestureDetector(
+                onTap: _showPeriodSelector,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentPeriodLabel,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: RekapTheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.swap_horiz,
+                      size: 14,
+                      color: RekapTheme.primary,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
         backgroundColor: Colors.white,
         foregroundColor: RekapTheme.onSurface,
+        actions: [
+          if (_isSuperAdmin && widget.student != null)
+            IconButton(
+              icon: const Icon(Icons.calendar_month),
+              tooltip: 'Ganti Periode',
+              onPressed: _showPeriodSelector,
+            ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+      body: _isLoading || _isLoadingDetails
+          ? const LoadingIndicator()
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -185,7 +377,7 @@ class _InputGradesScreenState extends State<InputGradesScreen> {
                       children: [
                         Icon(Icons.history, size: 48, color: RekapTheme.outline),
                         const SizedBox(height: 16),
-                        const Text('Belum ada rincian nilai.'),
+                        const Text('Belum ada rincian nilai untuk periode ini.'),
                       ],
                     ),
                   )

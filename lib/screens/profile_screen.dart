@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/rekap_repository.dart';
 import '../services/auth_service.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 import 'account_management_screen.dart';
 import 'master_data_screen.dart';
 
@@ -309,14 +310,7 @@ class _LogoutButtonState extends State<_LogoutButton> {
       child: OutlinedButton.icon(
         onPressed: _isLoading ? null : _logout,
         icon: _isLoading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: RekapTheme.error,
-                ),
-              )
+            ? const LoadingIndicator(size: 18)
             : const Icon(Icons.logout, color: RekapTheme.error),
         label: const Text(
           'Keluar dari Akun',

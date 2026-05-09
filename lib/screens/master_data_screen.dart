@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'account_management_screen.dart';
 import '../services/api_service.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 class MasterDataScreen extends StatefulWidget {
   const MasterDataScreen({super.key});
@@ -564,7 +565,7 @@ class _MasterDataScreenState extends State<MasterDataScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingIndicator()
           : TabBarView(
               controller: _tabController,
               children: [

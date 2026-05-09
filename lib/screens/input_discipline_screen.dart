@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 class InputDisciplineScreen extends StatefulWidget {
   const InputDisciplineScreen({super.key, required this.student});
@@ -143,7 +144,7 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
         foregroundColor: RekapTheme.onSurface,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingIndicator()
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [

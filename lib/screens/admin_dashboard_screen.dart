@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/rekap_repository.dart';
+import '../main.dart';
 import '../models/school_news.dart';
 import '../models/user_profile.dart';
 import '../theme/rekap_theme.dart';
@@ -354,17 +355,13 @@ class _QuickAccessGrid extends StatelessWidget {
         ),
         _QuickAccessItem(
           icon: isSuperAdmin ? Icons.manage_accounts : Icons.edit_note,
-          label: isSuperAdmin ? 'Kelola Akun' : 'Input Grades',
+          label: isSuperAdmin ? 'Input Nilai' : 'Input Grades',
           isPrimary: false,
           onTap: () {
             if (isSuperAdmin) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const AccountManagementScreen(),
-                ),
-              );
-            } else {
-              // Navigator to student list tab
+              // Navigate to student list for grade input
+              // This would switch to the Student tab via parent context
+              _navigateToStudentList(context);
             }
           },
         ),
@@ -381,20 +378,42 @@ class _QuickAccessGrid extends StatelessWidget {
               }
             },
           ),
-        _QuickAccessItem(
-          icon: Icons.newspaper,
-          label: 'Announcements',
-          isPrimary: false,
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => AnnouncementsScreen(isAdmin: !isGuru),
-              ),
-            );
-          },
-        ),
+        if (isSuperAdmin)
+          _QuickAccessItem(
+            icon: Icons.people,
+            label: 'Kelola Akun',
+            isPrimary: false,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AccountManagementScreen(),
+                ),
+              );
+            },
+          ),
+        if (!isSuperAdmin)
+          _QuickAccessItem(
+            icon: Icons.newspaper,
+            label: 'Announcements',
+            isPrimary: false,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => AnnouncementsScreen(isAdmin: !isGuru),
+                ),
+              );
+            },
+          ),
       ],
     );
+  }
+
+  void _navigateToStudentList(BuildContext context) {
+    // Switch to the Student tab (index 1 in the AppShell)
+    final appShellState = context.findAncestorStateOfType<AppShellState>();
+    if (appShellState != null) {
+      appShellState.switchToTab(1);
+    }
   }
 }
 

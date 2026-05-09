@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/rekap_repository.dart';
 import '../models/student.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Detail Nilai Real-time – Grade Detail Screen (User/Parent view)
 /// Matches: detail-nilai-realtime-user.html
@@ -30,7 +31,7 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
     }
   }
 
-  Future<void> _updateFilter(int grade, String semester) async {
+  Future<void> _updateFilter(int grade, String semester, String academicYear) async {
     final original = RekapRepository.instance.childStudent;
     if (original == null) return;
 
@@ -44,6 +45,7 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
       original.id,
       gradeLevel: grade,
       semester: semester,
+      academicYear: academicYear,
     );
 
     if (mounted) {
@@ -82,7 +84,7 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
             RefreshIndicator(
               onRefresh: () async {
                 if (widget.onRefresh != null) widget.onRefresh!();
-                await _updateFilter(_selectedGrade!, _selectedSemester!);
+                await _updateFilter(_selectedGrade!, _selectedSemester!, _student!.academicYear);
               },
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -111,7 +113,7 @@ class _GradeDetailScreenState extends State<GradeDetailScreen> {
             if (_isLoading)
               Container(
                 color: Colors.black.withValues(alpha: 0.1),
-                child: const Center(child: CircularProgressIndicator()),
+                child: const LoadingIndicator(),
               ),
           ],
         ),
@@ -251,7 +253,7 @@ class _PeriodFilter extends StatelessWidget {
   final int currentGrade;
   final String currentSemester;
   final Student student;
-  final void Function(int grade, String semester) onChanged;
+  final void Function(int grade, String semester, String academicYear) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -260,11 +262,13 @@ class _PeriodFilter extends StatelessWidget {
       {
         'grade': student.gradeLevel,
         'semester': student.semester,
+        'academicYear': student.academicYear,
         'label': 'Kelas ${student.gradeLevel} - ${student.semester} (Aktif)',
       },
       ...student.histories.map((h) => {
             'grade': h.gradeLevel,
             'semester': h.semester,
+            'academicYear': h.academicYear,
             'label': 'Kelas ${h.gradeLevel} - ${h.semester}',
           }),
     ];
@@ -305,7 +309,11 @@ class _PeriodFilter extends StatelessWidget {
           }),
           onChanged: (index) {
             if (index != null) {
-              onChanged(options[index]['grade'], options[index]['semester']);
+              onChanged(
+                options[index]['grade'], 
+                options[index]['semester'],
+                options[index]['academicYear'],
+              );
             }
           },
         ),

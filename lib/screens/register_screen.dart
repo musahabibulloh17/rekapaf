@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../theme/rekap_theme.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Register screen — creates a new account via Laravel API.
 class RegisterScreen extends StatefulWidget {
@@ -276,14 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const LoadingIndicator(size: 22)
                       : const Text(
                           'Daftar',
                           style: TextStyle(

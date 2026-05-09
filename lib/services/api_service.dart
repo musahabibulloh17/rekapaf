@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Gunakan 10.0.2.2 untuk Android Emulator, atau IP lokal untuk device fisik.
   // Ganti dengan IP komputer kamu di jaringan lokal.
-  static const String baseUrl = 'https://ca32-2001-448a-5130-bac1-700d-50bd-ce17-ef14.ngrok-free.app/api';
+  static const String baseUrl = 'http://192.168.0.111:8000/api';
 
   static String? _token;
 
@@ -100,24 +100,29 @@ class ApiService {
   ) async {
     final uri = Uri.parse('$_currentBaseUrl$endpoint');
     final request = http.MultipartRequest('POST', uri);
-    
+
     request.headers.addAll({
       'Accept': 'application/json',
       if (_token != null) 'Authorization': 'Bearer $_token',
     });
-    
+
     request.fields.addAll(fields);
-    
+
     if (file != null) {
-      final mimeTypeData = lookupMimeType(file.path, headerBytes: [0xFF, 0xD8])?.split('/');
+      final mimeTypeData = lookupMimeType(
+        file.path,
+        headerBytes: [0xFF, 0xD8],
+      )?.split('/');
       final multipartFile = await http.MultipartFile.fromPath(
         fileField,
         file.path,
-        contentType: mimeTypeData != null ? MediaType(mimeTypeData[0], mimeTypeData[1]) : null,
+        contentType: mimeTypeData != null
+            ? MediaType(mimeTypeData[0], mimeTypeData[1])
+            : null,
       );
       request.files.add(multipartFile);
     }
-    
+
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
     return _handleResponse(response);

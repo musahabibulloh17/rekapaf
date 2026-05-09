@@ -110,6 +110,7 @@ class RekapRepository {
     int id, {
     int? gradeLevel,
     String? semester,
+    String? academicYear,
   }) async {
     try {
       String path = '/students/$id';
@@ -117,6 +118,7 @@ class RekapRepository {
       if (gradeLevel != null)
         queryParams['grade_level'] = gradeLevel.toString();
       if (semester != null) queryParams['semester'] = semester;
+      if (academicYear != null) queryParams['academic_year'] = academicYear;
 
       if (queryParams.isNotEmpty) {
         path += '?${Uri(queryParameters: queryParams).query}';
@@ -292,6 +294,8 @@ class RekapRepository {
     required String type,
     required double score,
     String? date,
+    int? gradeLevel,
+    String? semester,
   }) async {
     final Map<String, dynamic> body = {
       'student_id': studentId,
@@ -302,6 +306,13 @@ class RekapRepository {
     };
     if (date != null && date.isNotEmpty) {
       body['date'] = date;
+    }
+    // Allow superadmin to input grades for previous semesters
+    if (gradeLevel != null) {
+      body['grade_level'] = gradeLevel;
+    }
+    if (semester != null) {
+      body['semester'] = semester;
     }
 
     await ApiService.post('/scores/details', body);

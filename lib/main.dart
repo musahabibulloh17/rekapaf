@@ -12,6 +12,7 @@ import 'screens/profile_screen.dart';
 import 'screens/student_list_screen.dart';
 import 'services/auth_service.dart';
 import 'theme/rekap_theme.dart';
+import 'widgets/loading_indicator.dart';
 
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -97,7 +98,7 @@ class _AuthGateState extends State<AuthGate> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: RekapTheme.primary),
+              LoadingIndicator(size: 40),
               SizedBox(height: 16),
               Text(
                 'Memuat REKAPAF...',
@@ -127,17 +128,31 @@ class AppShell extends StatefulWidget {
   final VoidCallback onLogout;
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<AppShell> createState() => AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+/// Public state class for AppShell to allow tab switching from child screens
+class AppShellState extends State<AppShell> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   bool _isLoading = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _refreshData();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  /// Switch to a specific tab (for navigation from child screens)
+  void switchToTab(int index) {
+    setState(() => _currentIndex = index);
   }
 
   Future<void> _refreshData() async {
@@ -200,9 +215,7 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: RekapTheme.primary),
-            )
+          ? const LoadingIndicator()
           : IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
