@@ -271,8 +271,17 @@ class _AnnouncementCard extends StatelessWidget {
                   announcement.fullImageUrl,
                   height: 160,
                   width: double.infinity,
+                  alignment: Alignment(announcement.focalX, announcement.focalY),
                   fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                  errorBuilder: (ctx, err, stack) => Container(
+                    height: 160,
+                    width: double.infinity,
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ),
               ),
             ],
