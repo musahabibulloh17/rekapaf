@@ -436,8 +436,8 @@ class AppShellState extends State<AppShell> {
                 HapticFeedback.lightImpact();
                 _pageController.animateToPage(
                   index,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOutQuart,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
                 );
                 setState(() => _currentIndex = index);
               },
@@ -511,8 +511,8 @@ class CustomFloatingNavbar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOutCubic,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(

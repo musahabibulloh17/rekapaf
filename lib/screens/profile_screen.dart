@@ -28,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: RekapTheme.surface,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
           children: [
             // ── Profile Header ──────────────────────────────
             Container(

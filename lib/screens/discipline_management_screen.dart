@@ -60,7 +60,7 @@ class _DisciplineManagementScreenState
           }
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
           children: [
             _SearchBar(
               onChanged: (value) => setState(() => _searchQuery = value),

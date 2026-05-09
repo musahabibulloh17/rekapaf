@@ -48,7 +48,7 @@ class AdminDashboardScreen extends StatelessWidget {
             }
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
             children: [
               // ── Welcome Section ─────────────────────────────
               Text(

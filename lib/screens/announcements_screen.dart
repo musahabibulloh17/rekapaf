@@ -6,6 +6,7 @@ import '../data/rekap_repository.dart';
 import 'add_announcement_screen.dart';
 import 'news_detail_screen.dart';
 import '../widgets/loading_indicator.dart';
+import '../theme/rekap_theme.dart';
 
 /// Screen untuk menampilkan daftar pengumuman
 class AnnouncementsScreen extends StatefulWidget {
@@ -88,6 +89,20 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     FilterChip(
                       label: const Text('Semua'),
                       selected: _selectedFilter == null,
+                      selectedColor: RekapTheme.primary,
+                      checkmarkColor: Colors.white,
+                      labelStyle: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight:
+                            _selectedFilter == null
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                        color:
+                            _selectedFilter == null
+                                ? Colors.white
+                                : RekapTheme.onSurfaceVariant,
+                      ),
                       onSelected: (_) {
                         setState(() {
                           _selectedFilter = null;
@@ -101,11 +116,24 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                         child: FilterChip(
                           label: Text(category.label),
                           selected: _selectedFilter == category,
+                          selectedColor: RekapTheme.primary,
+                          checkmarkColor: Colors.white,
+                          labelStyle: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            fontWeight:
+                                _selectedFilter == category
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                            color:
+                                _selectedFilter == category
+                                    ? Colors.white
+                                    : RekapTheme.onSurfaceVariant,
+                          ),
                           onSelected: (_) {
                             setState(() {
-                              _selectedFilter = _selectedFilter == category
-                                  ? null
-                                  : category;
+                              _selectedFilter =
+                                  _selectedFilter == category ? null : category;
                             });
                           },
                         ),
