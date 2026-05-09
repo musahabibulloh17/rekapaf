@@ -218,15 +218,21 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                   value: _classrooms.any((c) => c['name'] == selectedClass)
                       ? selectedClass
                       : null,
-                  decoration: const InputDecoration(labelText: 'Kelas'),
+                  decoration: InputDecoration(
+                    labelText: 'Kelas',
+                    helperText: student != null
+                        ? 'Kelas tidak dapat diubah di sini'
+                        : null,
+                  ),
                   items: _classrooms.map((c) {
                     return DropdownMenuItem<String>(
                       value: c['name'],
                       child: Text(c['name']),
                     );
                   }).toList(),
-                  onChanged: (val) =>
-                      setStateBuilder(() => selectedClass = val),
+                  onChanged: student == null
+                      ? (val) => setStateBuilder(() => selectedClass = val)
+                      : null,
                 ),
               ],
             ),
@@ -852,21 +858,37 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_tabController.index == 0) {
-            _addClass();
-          } else if (_tabController.index == 1) {
-            _showStudentForm();
-          } else if (_tabController.index == 2) {
-            _openAccountManagement();
-          } else {
-            _showSubjectForm();
-          }
-        },
-        backgroundColor: RekapTheme.primaryContainer,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: RekapTheme.primary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            if (_tabController.index == 0) {
+              _addClass();
+            } else if (_tabController.index == 1) {
+              _showStudentForm();
+            } else if (_tabController.index == 2) {
+              _openAccountManagement();
+            } else {
+              _showSubjectForm();
+            }
+          },
+          backgroundColor: RekapTheme.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(Icons.add, size: 24),
+        ),
       ),
     );
   }
