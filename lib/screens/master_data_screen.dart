@@ -476,11 +476,11 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                     final assign = entry.value;
                     
                     final subject = _subjects.firstWhere(
-                      (s) => s['id'] == assign['subject_id'],
+                      (s) => s['id'].toString() == assign['subject_id'].toString(),
                       orElse: () => {'name': 'Unknown Subject'},
                     );
                     final classroom = _classrooms.firstWhere(
-                      (c) => c['id'] == assign['classroom_id'],
+                      (c) => c['id'].toString() == assign['classroom_id'].toString(),
                       orElse: () => {'name': 'Semua Kelas'},
                     );
                     
@@ -533,19 +533,25 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                       labelText: 'Pilih Kelas',
                       border: OutlineInputBorder(),
                     ),
-                    items: _classrooms.map((c) {
-                      return DropdownMenuItem<int>(
-                        value: c['id'],
-                        child: Text(c['name']),
-                      );
-                    }).toList(),
+                    items: [
+                      const DropdownMenuItem<int>(
+                        value: null,
+                        child: Text('Semua Kelas (Global)'),
+                      ),
+                      ..._classrooms.map((c) {
+                        return DropdownMenuItem<int>(
+                          value: c['id'],
+                          child: Text(c['name']),
+                        );
+                      }),
+                    ],
                     onChanged: (val) => setDialogState(() => pendingClassroomId = val),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: (pendingSubjectId == null || pendingClassroomId == null)
+                      onPressed: (pendingSubjectId == null)
                           ? null
                           : () {
                               setDialogState(() {
@@ -768,7 +774,21 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                subtitle: Text(roleLabel),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(roleLabel),
+                                    if (account['homeroom_class'] != null)
+                                      Text(
+                                        'Wali Kelas: ${account['homeroom_class']['name']}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: RekapTheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                                 trailing: IconButton(
                                   icon: const Icon(
                                     Icons.manage_accounts,
@@ -801,7 +821,7 @@ class _MasterDataScreenState extends State<MasterDataScreen>
                                             String label = s['name'];
                                             if (classroomId != null) {
                                               final cls = _classrooms.firstWhere(
-                                                (c) => c['id'] == classroomId,
+                                                (c) => c['id'].toString() == classroomId.toString(),
                                                 orElse: () => {'name': ''},
                                               );
                                               if (cls['name'].isNotEmpty) {
