@@ -423,7 +423,30 @@ class RekapRepository {
       'points': points,
       'icon': icon,
     });
-    await loadStudents(); // Refresh
+    await loadStudents();
+  }
+
+  Future<void> updateDisciplineRecord({
+    required int id,
+    required String title,
+    required String category,
+    required String date,
+    required int points,
+    String icon = 'flag',
+  }) async {
+    await ApiService.put('/discipline/$id', {
+      'title': title,
+      'category': category,
+      'record_date': date,
+      'points': points,
+      'icon': icon,
+    });
+    await loadStudents();
+  }
+
+  Future<void> deleteDisciplineRecord(int id) async {
+    await ApiService.delete('/discipline/$id');
+    await loadStudents();
   }
 
   // ── Parsers ───────────────────────────────────────────────────────────
@@ -461,6 +484,7 @@ class RekapRepository {
     final records =
         (dpData?['records'] as List?)?.map((r) {
           return DisciplineRecord(
+            id: r['id'] ?? 0,
             title: r['title'] ?? '',
             category: r['category'] ?? '',
             date: DateTime.tryParse(r['date'] ?? '') ?? DateTime.now(),

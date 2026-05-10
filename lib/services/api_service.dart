@@ -11,7 +11,7 @@ import 'package:dio/dio.dart' as dio_pkg;
 class ApiService {
   // Gunakan 10.0.2.2 untuk Android Emulator, atau IP lokal untuk device fisik.
   // Ganti dengan IP komputer kamu di jaringan lokal.
-  static const String baseUrl = 'http://192.168.0.111:8000/api';
+  static const String baseUrl = 'https://rekapaf-backend-production.up.railway.app/api';
 
   static String? _token;
 

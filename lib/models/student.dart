@@ -181,6 +181,7 @@ class DisciplinePoints {
 /// Model class representing a single discipline record entry.
 class DisciplineRecord {
   const DisciplineRecord({
+    required this.id,
     required this.title,
     required this.category,
     required this.date,
@@ -188,6 +189,7 @@ class DisciplineRecord {
     required this.icon,
   });
 
+  final int id;
   final String title;
   final String category;
   final DateTime date;

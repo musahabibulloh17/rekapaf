@@ -15,7 +15,26 @@ class InputDisciplineScreen extends StatefulWidget {
 }
 
 class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
+  late Student _student;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _student = widget.student;
+  }
+
+  Future<void> _refreshData() async {
+    setState(() => _isLoading = true);
+    try {
+      final updated = await RekapRepository.instance.getStudentById(_student.id);
+      if (updated != null && mounted) {
+        setState(() => _student = updated);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _addDisciplinePoint() async {
     final titleController = TextEditingController();
@@ -32,30 +51,7 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: category,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Prestasi',
-                        child: Text('Prestasi (+)'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Pelanggaran Ringan',
-                        child: Text('Pelanggaran Ringan (-)'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Pelanggaran Berat',
-                        child: Text('Pelanggaran Berat (-)'),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setDialogState(() => category = val);
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Kategori',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   const SizedBox(height: 12),
                   TextField(
                     controller: titleController,
@@ -67,9 +63,9 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: pointsController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(signed: true),
                     decoration: const InputDecoration(
-                      labelText: 'Poin (angka positif atau negatif)',
+                      labelText: 'Poin (cth: 10 untuk prestasi, -5 untuk pelanggaran)',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -106,19 +102,20 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
 
       setState(() => _isLoading = true);
       try {
+        final finalCategory = points > 0 ? 'Prestasi' : 'Pelanggaran';
         await RekapRepository.instance.addDisciplineRecord(
           studentId: widget.student.id,
           title: title,
-          category: category,
+          category: finalCategory,
           date: DateTime.now().toIso8601String().split('T')[0],
-          points: category == 'Prestasi' ? points.abs() : -points.abs(),
-          icon: category == 'Prestasi' ? 'star' : 'flag',
+          points: points,
+          icon: points > 0 ? 'star' : 'flag',
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Poin tatib berhasil ditambahkan')),
           );
-          Navigator.pop(context); // Go back to refresh student list
+          _refreshData();
         }
       } catch (e) {
         if (mounted) {
@@ -132,14 +129,138 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
     }
   }
 
+  Future<void> _editDisciplinePoint(DisciplineRecord record) async {
+    final titleController = TextEditingController(text: record.title);
+    final pointsController = TextEditingController(text: record.points.abs().toString());
+    String category = record.category;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit Poin Tatib'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Keterangan',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: pointsController,
+                    keyboardType: const TextInputType.numberWithOptions(signed: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Poin (cth: 10 atau -5)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Batal'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == true) {
+      final title = titleController.text.trim();
+      final points = int.tryParse(pointsController.text.trim());
+
+      if (title.isEmpty || points == null) return;
+
+      setState(() => _isLoading = true);
+      try {
+        final finalCategory = points > 0 ? 'Prestasi' : 'Pelanggaran';
+        await RekapRepository.instance.updateDisciplineRecord(
+          id: record.id,
+          title: title,
+          category: finalCategory,
+          date: record.date.toIso8601String().split('T')[0],
+          points: points,
+          icon: points > 0 ? 'star' : 'flag',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Poin tatib berhasil diperbarui')),
+          );
+          _refreshData();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _deleteDisciplinePoint(DisciplineRecord record) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Catatan'),
+        content: const Text('Apakah Anda yakin ingin menghapus catatan tatib ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: RekapTheme.error),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await RekapRepository.instance.deleteDisciplineRecord(record.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Catatan tatib berhasil dihapus')),
+          );
+          _refreshData();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final records = widget.student.disciplinePoints.records;
+    final records = _student.disciplinePoints.records;
 
     return Scaffold(
       backgroundColor: RekapTheme.surface,
       appBar: AppBar(
-        title: Text('Tatib: ${widget.student.name}'),
+        title: Text('Tatib: ${_student.name}'),
         backgroundColor: Colors.white,
         foregroundColor: RekapTheme.onSurface,
       ),
@@ -226,16 +347,56 @@ class _InputDisciplineScreenState extends State<InputDisciplineScreen> {
                           '${r.category} • ${DateFormat('d MMM yyyy').format(r.date)}',
                           style: const TextStyle(fontSize: 12),
                         ),
-                        trailing: Text(
-                          isPositive ? '+${r.points}' : '${r.points}',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: isPositive
-                                ? RekapTheme.primary
-                                : RekapTheme.error,
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isPositive ? '+${r.points}' : '${r.points}',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: isPositive
+                                    ? RekapTheme.primary
+                                    : RekapTheme.error,
+                              ),
+                            ),
+                            if (RekapRepository.instance.currentUser.isSuperAdmin) ...[
+                              const SizedBox(width: 8),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert, size: 20),
+                                onSelected: (val) {
+                                  if (val == 'edit') {
+                                    _editDisciplinePoint(r);
+                                  } else if (val == 'delete') {
+                                    _deleteDisciplinePoint(r);
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit_outlined, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete_outline, size: 18, color: RekapTheme.error),
+                                        SizedBox(width: 8),
+                                        Text('Hapus', style: TextStyle(color: RekapTheme.error)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     );
