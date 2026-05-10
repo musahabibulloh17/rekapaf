@@ -578,6 +578,18 @@ class _MasterDataScreenState extends State<MasterDataScreen>
             ),
             FilledButton(
               onPressed: () {
+                if (pendingSubjectId != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Data belum ditambahkan, tambahkan terlebih dahulu dengan klik "Tambah ke daftar"',
+                      ),
+                      backgroundColor: RekapTheme.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
                 Navigator.pop(ctx, selectedAssignments);
               },
               child: const Text('Simpan Perubahan'),
