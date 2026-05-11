@@ -389,7 +389,6 @@ class AppShellState extends State<AppShell> {
     }
 
     return Scaffold(
-      extendBody: true,
       body: Stack(
         children: [
           PageView(
@@ -404,68 +403,61 @@ class AppShellState extends State<AppShell> {
                 child: LoadingIndicator(),
               ),
             ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: CustomFloatingNavbar(
-              currentIndex: _currentIndex,
-              items: (isAdmin || isGuru)
-                  ? [
-                      FloatingNavbarItem(
-                          icon: Icons.dashboard_rounded, label: 'Dashboard'),
-                      FloatingNavbarItem(
-                          icon: Icons.people_alt_rounded, label: 'Siswa'),
-                      FloatingNavbarItem(
-                          icon: Icons.verified_user_rounded, label: 'Tatib'),
-                      FloatingNavbarItem(
-                          icon: Icons.person_rounded, label: 'Profil'),
-                    ]
-                  : [
-                      FloatingNavbarItem(
-                          icon: Icons.home_rounded, label: 'Beranda'),
-                      FloatingNavbarItem(
-                          icon: Icons.bar_chart_rounded, label: 'Nilai'),
-                      FloatingNavbarItem(
-                          icon: Icons.verified_user_rounded, label: 'Tatib'),
-                      FloatingNavbarItem(
-                          icon: Icons.person_rounded, label: 'Profil'),
-                    ],
-              onTap: (index) {
-                if (_currentIndex == index) return;
-                HapticFeedback.lightImpact();
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                );
-                setState(() => _currentIndex = index);
-              },
-            ),
-          ),
         ],
+      ),
+      bottomNavigationBar: CustomBottomNavbar(
+        currentIndex: _currentIndex,
+        items: (isAdmin || isGuru)
+            ? [
+                NavbarItem(
+                    icon: Icons.dashboard_rounded, label: 'Dashboard'),
+                NavbarItem(
+                    icon: Icons.people_alt_rounded, label: 'Siswa'),
+                NavbarItem(
+                    icon: Icons.verified_user_rounded, label: 'Tatib'),
+                NavbarItem(
+                    icon: Icons.person_rounded, label: 'Profil'),
+              ]
+            : [
+                NavbarItem(
+                    icon: Icons.home_rounded, label: 'Beranda'),
+                NavbarItem(
+                    icon: Icons.bar_chart_rounded, label: 'Nilai'),
+                NavbarItem(
+                    icon: Icons.verified_user_rounded, label: 'Tatib'),
+                NavbarItem(
+                    icon: Icons.person_rounded, label: 'Profil'),
+              ],
+        onTap: (index) {
+          if (_currentIndex == index) return;
+          HapticFeedback.lightImpact();
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+          setState(() => _currentIndex = index);
+        },
       ),
     );
   }
 }
 
-class FloatingNavbarItem {
+class NavbarItem {
   final IconData icon;
   final String label;
-  final int count;
-  FloatingNavbarItem({
+  NavbarItem({
     required this.icon,
     required this.label,
-    this.count = 0,
   });
 }
 
-class CustomFloatingNavbar extends StatelessWidget {
+class CustomBottomNavbar extends StatelessWidget {
   final int currentIndex;
-  final List<FloatingNavbarItem> items;
+  final List<NavbarItem> items;
   final ValueChanged<int> onTap;
 
-  const CustomFloatingNavbar({
+  const CustomBottomNavbar({
     super.key,
     required this.currentIndex,
     required this.items,
@@ -474,105 +466,63 @@ class CustomFloatingNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      height: 72,
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+        border: Border(
+          top: BorderSide(
+            color: Color(0xFFE8E8E8),
+            width: 0.5,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        ),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = currentIndex == index;
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      child: SizedBox(
+        height: 60,
+        child: Row(
+          children: List.generate(items.length, (index) {
+            final item = items[index];
+            final isSelected = currentIndex == index;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                if (!isSelected) {
-                  HapticFeedback.lightImpact();
-                  onTap(index);
-                }
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? RekapTheme.primary.withValues(alpha: 0.12)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          item.icon,
-                          color: isSelected
-                              ? RekapTheme.primary
-                              : RekapTheme.outline,
-                          size: 22,
-                        ),
-                        if (item.count > 0) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: RekapTheme.primary,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              item.count > 99 ? '99+' : item.count.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 200),
-                    style: TextStyle(
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (!isSelected) {
+                    HapticFeedback.lightImpact();
+                    onTap(index);
+                  }
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      item.icon,
                       color: isSelected
                           ? RekapTheme.primary
-                          : RekapTheme.outline,
-                      fontSize: 11,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                      fontFamily: 'Inter',
+                          : const Color(0xFFAAAAAA),
+                      size: 24,
                     ),
-                    child: Text(item.label),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: isSelected
+                            ? RekapTheme.primary
+                            : const Color(0xFFAAAAAA),
+                        fontSize: 11,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

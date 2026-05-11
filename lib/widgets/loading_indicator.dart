@@ -8,7 +8,7 @@ class LoadingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Image.asset(
-        'lib/Loading.gif',
+        'lib/loading.gif',
         width: size,
         height: size,
       ),
